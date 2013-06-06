@@ -1,6 +1,8 @@
 gogeos - Go library for spatial data operations and geometric algorithms
 ========================================================================
 
+[![Build Status](https://travis-ci.org/paulsmith/gogeos.png?branch=master)](https://travis-ci.org/paulsmith/gogeos)
+
 gogeos is a library for Go that provides operations on spatial data and
 geometric algorithms.
 
