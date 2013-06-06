@@ -189,3 +189,6 @@ coll.LineMerge()
 *After:*
 
 ![](img/example9-merged-linestrings.png)
+
+*These examples were inspired by the developer’s guide to the
+[JTS](http://www.vividsolutions.com/jts/JTSHome.htm)*

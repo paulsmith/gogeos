@@ -4,8 +4,15 @@ body {
 .content,
 footer {
   width: 70%;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
 }
 footer {
+  margin-top: 40px;
   padding: 20px 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  font-size: smaller;
+}
+footer .copyright {
+  text-align: right;
 }
