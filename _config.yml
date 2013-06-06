@@ -1,4 +1,4 @@
 name: gogeos
 pygments: true
 markdown: redcarpet
-baseurl: http://paulsmith.github.io/gogeos/
+baseurl: http://paulsmith.github.io/gogeos

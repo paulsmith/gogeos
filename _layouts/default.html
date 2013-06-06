@@ -1,45 +1,60 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>{{ page.title }}</title>
-        <meta name="viewport" content="width=device-width">
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>{{ page.title }}</title>
+	<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.1.0/pure-min.css">
+	<link rel="stylesheet" href="{{site.baseurl}}/css/main.css">
+	<link rel="stylesheet" href="{{site.baseurl}}/css/syntax.css">
+</head>
+<body>
+	<div class="pure-g-r">
+		<header class="pure-u-1">
+			<nav class="pure-menu pure-menu-open pure-menu-fixed pure-menu-horizontal">
+				<a class="pure-menu-heading" href="">gogeos</a>
 
-        <!-- syntax highlighting CSS -->
-        <link rel="stylesheet" href="{{site.baseurl}}/css/syntax.css">
+				<ul>
+					<li>
+						<a href="#quickstart">Quick start</a>
+					</li>
+					<li>
+						<a href="#installation">Installation</a>
+					</li>
+					<li>
+						<a href="#examples">Examples</a>
+					</li>
+					<li>
+						<a href="http://godoc.org/github.com/paulsmith/gogeos/geos">godoc</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
 
-        <!-- Custom CSS -->
-        <link rel="stylesheet" href="{{site.baseurl}}/css/main.css">
+		<div class="content pure-u-1">
+		{{ content }}
+		</div>
 
-    </head>
-    <body>
+		<footer class="pure-u-1">
+			<address>
+				<a href="http://pauladamsmith.com/">Paul Smith</a><br>
+				<a href="https://twitter.com/paulsmith">@paulsmith</a>
+			</address>
+		</footer>
+	</div>
+<script type="text/javascript">
 
-        <div class="container">
-          <div class="site">
-            <div class="header">
-              <h1 class="title"><a href="/">{{ site.name }}</a></h1>
-              <a class="extra" href="/">home</a>
-            </div>
-     
-                {{ content }}
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-304677-19']);
+  _gaq.push(['_trackPageview']);
 
-            <div class="footer">
-              <div class="contact">
-                <p>
-                  Paul Smith<br />
-                  paulsmith@pobox.com
-                </p>
-              </div>
-              <div class="contact">
-                <p>
-                  <a href="http://github.com/paulsmith/">github.com/paulsmith</a><br />
-                  <a href="http://twitter.com/paulsmith/">twitter.com/paulsmith</a><br />
-                </p>
-              </div>
-            </div>
-          </div>
-        </div> <!-- /container -->
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
 
-    </body>
+</script>
+</body>
 </html>
