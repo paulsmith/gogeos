@@ -10,24 +10,6 @@ geometric algorithms.
 
 It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
 
-### Functionality
-
- * Binary predicates - intersects, disjoint, etc.
- * Topology operations - difference, union, etc.
- * Polygonization, line merging, and simplification
- * Prepared geometries (for better performance for common binary predicates)
- * Validity checking
- * DE-9IM
- * Geometry info - area, length, distance, etc.
- * IO - WKT & WKB read/write
-
-### Community
-
- * [GitHub project](https://github.com/paulsmith/gogeos)
- * [Issues tracker](https://github.com/paulsmith/gogeos/issues)
- * [Mailing list: gogeos@googlegroups.com](https://groups.google.com/forum/?fromgroups#!forum/gogeos)
- * [IRC: #gogeos on freenode](irc://irc.freenode.net/gogeos)
-
 <h2 id="quickstart">Quick start</h2>
 
 ```go
@@ -56,11 +38,33 @@ func main() {
 }
 ```
 
+<h2 id="overview">Overview</h2>
+
+### Functionality
+
+ * Binary predicates - intersects, disjoint, etc.
+ * Topology operations - difference, union, etc.
+ * Polygonization, line merging, and simplification
+ * Prepared geometries (for better performance for common binary predicates)
+ * Validity checking
+ * DE-9IM
+ * Geometry info - area, length, distance, etc.
+ * IO - WKT & WKB read/write
+
+gogeos is an open source project (MIT license).
+
+### Community
+
+ * [Source code: GitHub project](https://github.com/paulsmith/gogeos)
+ * [Issues tracker](https://github.com/paulsmith/gogeos/issues)
+ * [Mailing list: gogeos@googlegroups.com](https://groups.google.com/forum/?fromgroups#!forum/gogeos)
+ * [IRC: #gogeos on freenode](irc://irc.freenode.net/gogeos)
+
 <h2 id="installation">Installation</h2>
 
 ### Requirements
 
- * GEOS 3.3.x or greater
+ * GEOS 3.2.x or greater
 
 GEOS must be installed on your system to build gogeos.
 
@@ -103,12 +107,17 @@ have these two overlapping polygons, A in blue and B in orange:
 
 ![](img/example2-a-b.png)
 
-*(NB: these graphics weren't produced by gogeos directly - I used the excellent
-[draw2d](http://code.google.com/p/draw2d/draw2d) package.)*
+*(NB: these graphics weren't produced by gogeos directly - I used the
+excellent [draw2d](http://code.google.com/p/draw2d/draw2d) package to render
+the output of gogeos functions.)*
 
 Then the following operations will produce new geometries in magenta:
 
 #### Intersection
+
+```go
+A.Intersection(B)
+```
 
 ![](img/example3-intersection.png)
 
@@ -130,7 +139,9 @@ Then the following operations will produce new geometries in magenta:
 
 ### Unary topology operations
 
-gogeos can produce new geometries based on a operation performed on a single geometry, perhaps with some input. For example, given a linestring, the `Buffer()` method produces a new polygon:
+gogeos can produce new geometries based on a operation performed on a single
+geometry, perhaps with some input. For example, given a linestring, the
+`Buffer()` method produces a new polygon:
 
 #### Buffer
 
@@ -138,8 +149,8 @@ gogeos can produce new geometries based on a operation performed on a single geo
 
 ### Merging linestrings
 
-For a collection of non-noded linestrings, a new collection can be produced
-that merges together linestrings where the touch only at their start and end
+For a collection of fully noded linestrings, a new collection can be produced
+that merges together the linestrings that touch only at their start and end
 points. This is provided by calling the `LineMerge()` method on a
 MultiLineString collection:
 
