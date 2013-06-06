@@ -98,6 +98,11 @@ $ sudo make install
 $ go get github.com/paulsmith/gogeos/geos
 ```
 
+Documentation
+-------------
+
+ * [gogeos documentation](http://paulsmith.github.io/gogeos/)
+
 Example
 -------
 
