@@ -112,10 +112,20 @@ geometry, and computes the intersection with the receiver. The result is a new
 geometry, C (magenta):
 
 ```go
-C := A.intersection(B)
+C := geos.Must(A.Intersection(B))
 ```
 
 ![](http://paulsmith.github.io/gogeos/img/example3-intersection.png)
+
+`geos.Must` is just a convenience function that takes the output of any gogeos
+function or method that returns a geometry and an error. It panics if the
+error is non-null, otherwise returning the geometry, making it more convenient
+to use in single-value contexts. In production code, though, you’ll want to
+check the error value.
+
+*(NB: these graphics weren't produced by gogeos directly - I used the
+excellent [draw2d](http://code.google.com/p/draw2d/draw2d) package to render
+the output of gogeos functions.)*
 
 License
 -------
