@@ -8,7 +8,8 @@ geometric algorithms.
 
 It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
 
-<h2 id="quickstart">Quick start</h2>
+Quick start
+-----------
 
 ```go
 package main
@@ -36,7 +37,8 @@ func main() {
 }
 ```
 
-<h2 id="overview">Overview</h2>
+Overview
+--------
 
 ### Functionality
 
@@ -58,7 +60,8 @@ gogeos is an open source project.
  * [Mailing list: gogeos@googlegroups.com](https://groups.google.com/forum/?fromgroups#!forum/gogeos)
  * [IRC: #gogeos on freenode](irc://irc.freenode.net/gogeos)
 
-<h2 id="installation">Installation</h2>
+Installation
+------------
 
 ### Requirements
 
@@ -94,6 +97,25 @@ $ sudo make install
 ```bash
 $ go get github.com/paulsmith/gogeos/geos
 ```
+
+Example
+-------
+
+Let’s say you have two polygons, A (blue) and B (orange).
+
+![](http://paulsmith.github.io/gogeos/img/example2-a-b.png)
+
+One of the most common things to do with a spatial data library like gogeos is
+compute the intersection of two or more geometries. Intersection is just
+a method on geometry objects in gogeos, which takes one argument, the other
+geometry, and computes the intersection with the receiver. The result is a new
+geometry, C (magenta):
+
+```go
+C := A.intersection(B)
+```
+
+![](http://paulsmith.github.io/gogeos/img/example3-intersection.png)
 
 License
 -------
