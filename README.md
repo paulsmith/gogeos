@@ -92,7 +92,7 @@ $ sudo make install
 ### Installing gogeos
 
 ```bash
-$ go get github.com/paulsmith/gogeos
+$ go get github.com/paulsmith/gogeos/geos
 ```
 
 License
