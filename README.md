@@ -49,7 +49,7 @@ func main() {
  * Geometry info - area, length, distance, etc.
  * IO - WKT & WKB read/write
 
-gogeos is an open source project (MIT license).
+gogeos is an open source project.
 
 ### Community
 
@@ -62,7 +62,7 @@ gogeos is an open source project (MIT license).
 
 ### Requirements
 
- * GEOS 3.2.x or greater
+ * GEOS 3.3.x or greater
 
 GEOS must be installed on your system to build gogeos.
 
