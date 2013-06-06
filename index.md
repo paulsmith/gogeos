@@ -64,7 +64,7 @@ gogeos is an open source project (MIT license).
 
 ### Requirements
 
- * GEOS 3.2.x or greater
+ * GEOS 3.3.x or greater
 
 GEOS must be installed on your system to build gogeos.
 
