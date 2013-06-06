@@ -123,17 +123,33 @@ A.Intersection(B)
 
 #### Union
 
+```go
+A.Union(B)
+```
+
 ![](img/example4-union.png)
 
 #### Difference (A of B)
+
+```go
+A.Difference(B)
+```
 
 ![](img/example5-difference.png)
 
 #### Difference (B of A)
 
+```go
+B.Difference(A)
+```
+
 ![](img/example6-difference.png)
 
 #### Symmetric difference
+
+```go
+A.SymDifference(B)
+```
 
 ![](img/example7-symdifference.png)
 
@@ -145,6 +161,10 @@ geometry, perhaps with some input. For example, given a linestring, the
 
 #### Buffer
 
+```go
+g.Buffer(2.5)
+```
+
 ![](img/example8-buffer.png)
 
 ### Merging linestrings
@@ -153,6 +173,14 @@ For a collection of fully noded linestrings, a new collection can be produced
 that merges together the linestrings that touch only at their start and end
 points. This is provided by calling the `LineMerge()` method on a
 MultiLineString collection:
+
+```go
+var linestrings = []*geos.Geometry{
+	// ...
+}
+coll := geos.Must(geos.NewCollection(geos.MULTILINESTRING, linestrings...))
+coll.LineMerge()
+```
 
 *Before:*
 
