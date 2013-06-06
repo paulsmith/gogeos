@@ -101,7 +101,8 @@ $ go get github.com/paulsmith/gogeos/geos
 Documentation
 -------------
 
- * [gogeos documentation](http://paulsmith.github.io/gogeos/)
+ * [Main gogeos documentation](http://paulsmith.github.io/gogeos/)
+ * [godoc](http://godoc.org/github.com/paulsmith/gogeos/geos)
 
 Example
 -------
