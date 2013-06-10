@@ -44,32 +44,32 @@ func (d *WKTDecoder) destroy() {
 	d.r = nil
 }
 
-type WKTWriter struct {
+type WKTEncoder struct {
 	w *C.GEOSWKTWriter
 }
 
-func NewWKTWriter() *WKTWriter {
+func NewWKTEncoder() *WKTEncoder {
 	w := C.GEOSWKTWriter_create_r(handle)
 	if w == nil {
 		return nil
 	}
-	writer := &WKTWriter{w}
-	runtime.SetFinalizer(writer, (*WKTWriter).destroy)
-	return writer
+	e := &WKTEncoder{w}
+	runtime.SetFinalizer(e, (*WKTEncoder).destroy)
+	return e
 }
 
 // Encode returns a string that is the geometry encoded as WKT
-func (w *WKTWriter) Encode(g *Geometry) (string, error) {
+func (e *WKTEncoder) Encode(g *Geometry) (string, error) {
 	// XXX: free?
-	cstr := C.GEOSWKTWriter_write_r(handle, w.w, g.g)
+	cstr := C.GEOSWKTWriter_write_r(handle, e.w, g.g)
 	if cstr == nil {
 		return "", Error()
 	}
 	return C.GoString(cstr), nil
 }
 
-func (w *WKTWriter) destroy() {
+func (e *WKTEncoder) destroy() {
 	// XXX: mutex
-	C.GEOSWKTWriter_destroy_r(handle, w.w)
-	w.w = nil
+	C.GEOSWKTWriter_destroy_r(handle, e.w)
+	e.w = nil
 }

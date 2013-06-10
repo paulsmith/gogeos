@@ -30,8 +30,8 @@ func (g *Geometry) destroy() {
 }
 
 func (g *Geometry) ToWKT() (string, error) {
-	writer := NewWKTWriter()
-	return writer.Encode(g)
+	encoder := NewWKTEncoder()
+	return encoder.Encode(g)
 }
 func (g *Geometry) String() string {
 	str, err := g.ToWKT()
