@@ -58,9 +58,8 @@ func NewWKTWriter() *WKTWriter {
 	return writer
 }
 
-var DefaultWKTWriter *WKTWriter
-
-func (w *WKTWriter) Write(g *Geometry) (string, error) {
+// Encode returns a string that is the geometry encoded as WKT
+func (w *WKTWriter) Encode(g *Geometry) (string, error) {
 	// XXX: free?
 	cstr := C.GEOSWKTWriter_write_r(handle, w.w, g.g)
 	if cstr == nil {
@@ -73,8 +72,4 @@ func (w *WKTWriter) destroy() {
 	// XXX: mutex
 	C.GEOSWKTWriter_destroy_r(handle, w.w)
 	w.w = nil
-}
-
-func init() {
-	DefaultWKTWriter = NewWKTWriter()
 }

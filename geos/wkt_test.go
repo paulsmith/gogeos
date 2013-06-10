@@ -18,12 +18,12 @@ func TestWKTWriter(t *testing.T) {
 		if err != nil {
 			t.Errorf("WKTReader.Decode(): %v", err)
 		}
-		actual, err := writer.Write(geom)
+		actual, err := writer.Encode(geom)
 		if err != nil {
-			t.Errorf("WKTWriter.Write(): %v", err)
+			t.Errorf("WKTWriter.Encode(): %v", err)
 		}
 		if actual != test.out {
-			t.Errorf("WKTWriter.Write(): want %v, got %v", test.out, actual)
+			t.Errorf("WKTWriter.Encode(): want %v, got %v", test.out, actual)
 		}
 	}
 }
