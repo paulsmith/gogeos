@@ -10,13 +10,13 @@ var wktWriterTests = []struct{ in, out string }{
 
 func TestWKTWriter(t *testing.T) {
 	writer := NewWKTWriter()
-	reader := NewWKTReader()
+	decoder := NewWKTDecoder()
 	var geom *Geometry
 	var err error
 	for _, test := range wktWriterTests {
-		geom, err = reader.Decode(test.in)
+		geom, err = decoder.Decode(test.in)
 		if err != nil {
-			t.Errorf("WKTReader.Decode(): %v", err)
+			t.Errorf("WKTDecoder.Decode(): %v", err)
 		}
 		actual, err := writer.Encode(geom)
 		if err != nil {

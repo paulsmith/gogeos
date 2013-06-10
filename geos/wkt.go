@@ -11,26 +11,26 @@ import (
 )
 
 // Reads the WKT serialization and produces geometries
-type WKTReader struct {
+type WKTDecoder struct {
 	r *C.GEOSWKTReader
 }
 
-// Creates a new WKT reader, can be nil if initialization in the C API fails
-func NewWKTReader() *WKTReader {
+// Creates a new WKT decoder, can be nil if initialization in the C API fails
+func NewWKTDecoder() *WKTDecoder {
 	r := C.GEOSWKTReader_create_r(handle)
 	if r == nil {
 		return nil
 	}
-	reader := &WKTReader{r}
-	runtime.SetFinalizer(reader, (*WKTReader).destroy)
-	return reader
+	d := &WKTDecoder{r}
+	runtime.SetFinalizer(d, (*WKTDecoder).destroy)
+	return d
 }
 
 // Decode decodes the WKT string and returns a geometry
-func (r *WKTReader) Decode(wkt string) (*Geometry, error) {
+func (d *WKTDecoder) Decode(wkt string) (*Geometry, error) {
 	cstr := C.CString(wkt)
 	defer C.free(unsafe.Pointer(cstr))
-	g := C.GEOSWKTReader_read_r(handle, r.r, cstr)
+	g := C.GEOSWKTReader_read_r(handle, d.r, cstr)
 	if g == nil {
 		return nil, Error()
 	}
@@ -38,10 +38,10 @@ func (r *WKTReader) Decode(wkt string) (*Geometry, error) {
 	return &Geometry{g}, nil
 }
 
-func (r *WKTReader) destroy() {
+func (d *WKTDecoder) destroy() {
 	// XXX: mutex
-	C.GEOSWKTReader_destroy_r(handle, r.r)
-	r.r = nil
+	C.GEOSWKTReader_destroy_r(handle, d.r)
+	d.r = nil
 }
 
 type WKTWriter struct {
