@@ -26,17 +26,15 @@ func NewWKTReader() *WKTReader {
 	return reader
 }
 
-var DefaultWKTReader *WKTReader
-
-// Reads the WKT string and creates a geometry
-func (r *WKTReader) Read(wkt string) (*Geometry, error) {
+// Decode decodes the WKT string and returns a geometry
+func (r *WKTReader) Decode(wkt string) (*Geometry, error) {
 	cstr := C.CString(wkt)
 	defer C.free(unsafe.Pointer(cstr))
 	g := C.GEOSWKTReader_read_r(handle, r.r, cstr)
 	if g == nil {
 		return nil, Error()
 	}
-    // XXX: GeomFromPtr
+	// XXX: GeomFromPtr
 	return &Geometry{g}, nil
 }
 
@@ -63,7 +61,7 @@ func NewWKTWriter() *WKTWriter {
 var DefaultWKTWriter *WKTWriter
 
 func (w *WKTWriter) Write(g *Geometry) (string, error) {
-    // XXX: free?
+	// XXX: free?
 	cstr := C.GEOSWKTWriter_write_r(handle, w.w, g.g)
 	if cstr == nil {
 		return "", Error()
@@ -78,6 +76,5 @@ func (w *WKTWriter) destroy() {
 }
 
 func init() {
-	DefaultWKTReader = NewWKTReader()
 	DefaultWKTWriter = NewWKTWriter()
 }

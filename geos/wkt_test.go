@@ -14,9 +14,9 @@ func TestWKTWriter(t *testing.T) {
 	var geom *Geometry
 	var err error
 	for _, test := range wktWriterTests {
-		geom, err = reader.Read(test.in)
+		geom, err = reader.Decode(test.in)
 		if err != nil {
-			t.Errorf("WKTReader.Read(): %v", err)
+			t.Errorf("WKTReader.Decode(): %v", err)
 		}
 		actual, err := writer.Write(geom)
 		if err != nil {

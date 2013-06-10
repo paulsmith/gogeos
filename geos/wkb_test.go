@@ -13,9 +13,10 @@ var wkbReaderTests = []struct {
 }
 
 func TestWKBReaderRead(t *testing.T) {
+	wktRdr := NewWKTReader()
 	for i, test := range wkbReaderTests {
 		g1 := Must(DefaultWKBReader.Read(test.wkb))
-		g2 := Must(DefaultWKTReader.Read(test.wkt))
+		g2 := Must(wktRdr.Decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("WKBReaderRead #%d: should equal! got %v want %v", i, g1, g2)
 		}
@@ -30,9 +31,10 @@ var wkbReaderHexTests = []struct {
 }
 
 func TestWKBReaderHexRead(t *testing.T) {
+	wktRdr := NewWKTReader()
 	for i, test := range wkbReaderHexTests {
 		g1 := Must(DefaultWKBReader.ReadHex(test.hex))
-		g2 := Must(DefaultWKTReader.Read(test.wkt))
+		g2 := Must(wktRdr.Decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("WKBReaderRead #%d: should equal! got %v want %v", i, g1, g2)
 		}
@@ -47,8 +49,9 @@ var wkbWriterTests = []struct {
 }
 
 func TestWKBWriterWrite(t *testing.T) {
+	reader := NewWKTReader()
 	for i, test := range wkbWriterTests {
-		g1 := Must(DefaultWKTReader.Read(test.wkt))
+		g1 := Must(reader.Decode(test.wkt))
 		actual, err := DefaultWKBWriter.Write(g1)
 		if err != nil {
 			panic(err)
@@ -67,8 +70,9 @@ var wkbWriterHexTests = []struct {
 }
 
 func TestWKBWriterWriteHex(t *testing.T) {
+	reader := NewWKTReader()
 	for i, test := range wkbWriterHexTests {
-		g1 := Must(DefaultWKTReader.Read(test.wkt))
+		g1 := Must(reader.Decode(test.wkt))
 		actual, err := DefaultWKBWriter.WriteHex(g1)
 		if err != nil {
 			panic(err)

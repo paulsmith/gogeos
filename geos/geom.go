@@ -20,7 +20,8 @@ func GeomFromPtr(p *C.GEOSGeometry) *Geometry {
 }
 
 func FromWKT(wkt string) (*Geometry, error) {
-	return DefaultWKTReader.Read(wkt)
+	reader := NewWKTReader()
+	return reader.Decode(wkt)
 }
 
 func (g *Geometry) destroy() {
