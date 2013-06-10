@@ -13,7 +13,6 @@ import (
 )
 
 var (
-	ErrWKBRead  = errors.New("geos: reading WKB")
 	ErrWKBWrite = errors.New("geos: writing WKB")
 )
 
@@ -41,7 +40,7 @@ func (d *WKBDecoder) Decode(wkb []byte) (*Geometry, error) {
 	}
 	g := cGEOSWKBReader_read_r(handle, d.r, &cwkb[0], C.size_t(len(wkb)))
 	if g == nil {
-		return nil, ErrWKBRead
+		return nil, Error()
 	}
 	return GeomFromPtr(g), nil
 }
@@ -54,27 +53,25 @@ func (d *WKBDecoder) DecodeHex(wkbHex string) (*Geometry, error) {
 	return d.Decode(wkb)
 }
 
-type WKBWriter struct {
+type WKBEncoder struct {
 	w *C.GEOSWKBWriter
 }
 
-func NewWKBWriter() *WKBWriter {
+func NewWKBEncoder() *WKBEncoder {
 	w := C.GEOSWKBWriter_create_r(handle)
 	if w == nil {
 		return nil
 	}
-	writer := &WKBWriter{w}
-	runtime.SetFinalizer(writer, (*WKBWriter).destroy)
-	return writer
+	e := &WKBEncoder{w}
+	runtime.SetFinalizer(e, (*WKBEncoder).destroy)
+	return e
 }
 
-var DefaultWKBWriter *WKBWriter
-
-func writeWkb(w *WKBWriter, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEOSWKBWriter, *C.GEOSGeometry, *C.size_t) *C.uchar) ([]byte, error) {
+func encodeWkb(e *WKBEncoder, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEOSWKBWriter, *C.GEOSGeometry, *C.size_t) *C.uchar) ([]byte, error) {
 	var size C.size_t
-	bytes := fn(handle, w.w, g.g, &size)
+	bytes := fn(handle, e.w, g.g, &size)
 	if bytes == nil {
-		return nil, ErrWKBWrite
+		return nil, Error()
 	}
 	ptr := unsafe.Pointer(bytes)
 	defer C.free(ptr)
@@ -87,20 +84,16 @@ func writeWkb(w *WKBWriter, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEOSW
 	return out, nil
 }
 
-func (w *WKBWriter) Write(g *Geometry) ([]byte, error) {
-	return writeWkb(w, g, cGEOSWKBWriter_write_r)
+func (e *WKBEncoder) Encode(g *Geometry) ([]byte, error) {
+	return encodeWkb(e, g, cGEOSWKBWriter_write_r)
 }
 
-func (w *WKBWriter) WriteHex(g *Geometry) ([]byte, error) {
-	return writeWkb(w, g, cGEOSWKBWriter_writeHEX_r)
+func (e *WKBEncoder) EncodeHex(g *Geometry) ([]byte, error) {
+	return encodeWkb(e, g, cGEOSWKBWriter_writeHEX_r)
 }
 
-func (w *WKBWriter) destroy() {
+func (e *WKBEncoder) destroy() {
 	// XXX: mutex
-	C.GEOSWKBWriter_destroy_r(handle, w.w)
-	w.w = nil
-}
-
-func init() {
-	DefaultWKBWriter = NewWKBWriter()
+	C.GEOSWKBWriter_destroy_r(handle, e.w)
+	e.w = nil
 }

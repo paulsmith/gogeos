@@ -43,18 +43,19 @@ func TestWKBDecoderHexRead(t *testing.T) {
 	}
 }
 
-var wkbWriterTests = []struct {
+var wkbEncoderTests = []struct {
 	wkt string
 	wkb []byte
 }{
 	{"POINT(-117 35)", []byte{1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 64, 93, 192, 0, 0, 0, 0, 0, 128, 65, 64}},
 }
 
-func TestWKBWriterWrite(t *testing.T) {
+func TestWKBEncoderEncode(t *testing.T) {
 	wktDecoder := NewWKTDecoder()
-	for i, test := range wkbWriterTests {
+	wkbEncoder := NewWKBEncoder()
+	for i, test := range wkbEncoderTests {
 		g1 := Must(wktDecoder.Decode(test.wkt))
-		actual, err := DefaultWKBWriter.Write(g1)
+		actual, err := wkbEncoder.Encode(g1)
 		if err != nil {
 			panic(err)
 		}
@@ -64,18 +65,19 @@ func TestWKBWriterWrite(t *testing.T) {
 	}
 }
 
-var wkbWriterHexTests = []struct {
+var wkbEncoderHexTests = []struct {
 	wkt string
 	wkb []byte
 }{
 	{"POINT(-117 35)", []byte("01010000000000000000405DC00000000000804140")},
 }
 
-func TestWKBWriterWriteHex(t *testing.T) {
+func TestWKBEncoderEncodeHex(t *testing.T) {
 	wktDecoder := NewWKTDecoder()
-	for i, test := range wkbWriterHexTests {
+	wkbEncoder := NewWKBEncoder()
+	for i, test := range wkbEncoderHexTests {
 		g1 := Must(wktDecoder.Decode(test.wkt))
-		actual, err := DefaultWKBWriter.WriteHex(g1)
+		actual, err := wkbEncoder.EncodeHex(g1)
 		if err != nil {
 			panic(err)
 		}
