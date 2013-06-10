@@ -17,43 +17,41 @@ var (
 	ErrWKBWrite = errors.New("geos: writing WKB")
 )
 
-type WKBReader struct {
+type WKBDecoder struct {
 	r *C.GEOSWKBReader
 }
 
-func NewWKBReader() *WKBReader {
+func NewWKBDecoder() *WKBDecoder {
 	r := cGEOSWKBReader_create_r(handle)
-	reader := &WKBReader{r}
-	runtime.SetFinalizer(reader, (*WKBReader).destroy)
-	return reader
+	d := &WKBDecoder{r}
+	runtime.SetFinalizer(d, (*WKBDecoder).destroy)
+	return d
 }
 
-func (r *WKBReader) destroy() {
+func (d *WKBDecoder) destroy() {
 	// XXX: mutex
-	cGEOSWKBReader_destroy_r(handle, r.r)
-	r.r = nil
+	cGEOSWKBReader_destroy_r(handle, d.r)
+	d.r = nil
 }
 
-var DefaultWKBReader *WKBReader
-
-func (r *WKBReader) Read(wkb []byte) (*Geometry, error) {
+func (d *WKBDecoder) Decode(wkb []byte) (*Geometry, error) {
 	var cwkb []C.uchar
 	for i := range wkb {
 		cwkb = append(cwkb, C.uchar(wkb[i]))
 	}
-	g := cGEOSWKBReader_read_r(handle, r.r, &cwkb[0], C.size_t(len(wkb)))
+	g := cGEOSWKBReader_read_r(handle, d.r, &cwkb[0], C.size_t(len(wkb)))
 	if g == nil {
 		return nil, ErrWKBRead
 	}
 	return GeomFromPtr(g), nil
 }
 
-func (r *WKBReader) ReadHex(wkbHex string) (*Geometry, error) {
+func (d *WKBDecoder) DecodeHex(wkbHex string) (*Geometry, error) {
 	wkb, err := hex.DecodeString(wkbHex)
 	if err != nil {
 		return nil, err
 	}
-	return r.Read(wkb)
+	return d.Decode(wkb)
 }
 
 type WKBWriter struct {
@@ -104,6 +102,5 @@ func (w *WKBWriter) destroy() {
 }
 
 func init() {
-	DefaultWKBReader = NewWKBReader()
 	DefaultWKBWriter = NewWKBWriter()
 }

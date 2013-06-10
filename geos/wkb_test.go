@@ -5,17 +5,18 @@ import (
 	"testing"
 )
 
-var wkbReaderTests = []struct {
+var wkbDecoderTests = []struct {
 	wkb []byte
 	wkt string
 }{
 	{[]byte{1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 64, 93, 192, 0, 0, 0, 0, 0, 128, 65, 64}, "POINT(-117 35)"},
 }
 
-func TestWKBReaderRead(t *testing.T) {
+func TestWKBDecoderRead(t *testing.T) {
 	wktDecoder := NewWKTDecoder()
-	for i, test := range wkbReaderTests {
-		g1 := Must(DefaultWKBReader.Read(test.wkb))
+	wkbDecoder := NewWKBDecoder()
+	for i, test := range wkbDecoderTests {
+		g1 := Must(wkbDecoder.Decode(test.wkb))
 		g2 := Must(wktDecoder.Decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("#%d: should equal! got %v want %v", i, g1, g2)
@@ -23,17 +24,18 @@ func TestWKBReaderRead(t *testing.T) {
 	}
 }
 
-var wkbReaderHexTests = []struct {
+var wkbDecoderHexTests = []struct {
 	hex string
 	wkt string
 }{
 	{"01010000000000000000405DC00000000000804140", "POINT(-117 35)"},
 }
 
-func TestWKBReaderHexRead(t *testing.T) {
+func TestWKBDecoderHexRead(t *testing.T) {
 	wktDecoder := NewWKTDecoder()
-	for i, test := range wkbReaderHexTests {
-		g1 := Must(DefaultWKBReader.ReadHex(test.hex))
+	wkbDecoder := NewWKBDecoder()
+	for i, test := range wkbDecoderHexTests {
+		g1 := Must(wkbDecoder.DecodeHex(test.hex))
 		g2 := Must(wktDecoder.Decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("#%d: should equal! got %v want %v", i, g1, g2)
