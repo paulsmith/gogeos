@@ -34,8 +34,7 @@ func (d *WKTDecoder) Decode(wkt string) (*Geometry, error) {
 	if g == nil {
 		return nil, Error()
 	}
-	// XXX: geomFromPtr
-	return &Geometry{g}, nil
+	return geomFromPtr(g), nil
 }
 
 func (d *WKTDecoder) destroy() {
