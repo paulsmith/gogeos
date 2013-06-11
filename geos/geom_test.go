@@ -1,7 +1,7 @@
 package geos
 
 import (
-	//"io/ioutil"
+	"io/ioutil"
 	"math"
 	"testing"
 )
@@ -93,7 +93,6 @@ func TestGeometryBuffer(t *testing.T) {
 
 const bufferPoly = `POLYGON ((1.0000000000000000 0.0000000000000000, 0.9807852804032304 -0.1950903220161281, 0.9238795325112870 -0.3826834323650894, 0.8314696123025456 -0.5555702330196017, 0.7071067811865481 -0.7071067811865470, 0.5555702330196032 -0.8314696123025447, 0.3826834323650908 -0.9238795325112863, 0.1950903220161296 -0.9807852804032302, 0.0000000000000016 -1.0000000000000000, -0.1950903220161265 -0.9807852804032308, -0.3826834323650878 -0.9238795325112875, -0.5555702330196004 -0.8314696123025465, -0.7071067811865459 -0.7071067811865492, -0.8314696123025438 -0.5555702330196043, -0.9238795325112857 -0.3826834323650923, -0.9807852804032299 -0.1950903220161312, -1.0000000000000000 -0.0000000000000032, -0.9807852804032311 0.1950903220161249, -0.9238795325112882 0.3826834323650864, -0.8314696123025475 0.5555702330195990, -0.7071067811865505 0.7071067811865446, -0.5555702330196060 0.8314696123025428, -0.3826834323650936 0.9238795325112852, -0.1950903220161322 0.9807852804032297, -0.0000000000000037 1.0000000000000000, 0.1950903220161248 0.9807852804032311, 0.3826834323650867 0.9238795325112881, 0.5555702330195996 0.8314696123025469, 0.7071067811865455 0.7071067811865496, 0.8314696123025438 0.5555702330196044, 0.9238795325112859 0.3826834323650920, 0.9807852804032300 0.1950903220161305, 1.0000000000000000 0.0000000000000000))`
 
-/*
 func reconstructGeom(g *Geometry) *Geometry {
 	typeId, err := g.Type()
 	if err != nil {
@@ -101,29 +100,26 @@ func reconstructGeom(g *Geometry) *Geometry {
 	}
 	switch typeId {
 	case POINT:
-		cs := MustCoordSeq(MustCoordSeq(g.CoordSeq()).Clone())
-		return Must(NewPoint(cs))
+		coords := MustCoords(g.Coords())
+		return Must(NewPoint(coords...))
 	case LINESTRING:
-		cs := MustCoordSeq(MustCoordSeq(g.CoordSeq()).Clone())
-		return Must(NewLineString(cs))
+		coords := MustCoords(g.Coords())
+		return Must(NewLineString(coords...))
 	case LINEARRING:
-		cs := MustCoordSeq(MustCoordSeq(g.CoordSeq()).Clone())
-		return Must(NewLinearRing(cs))
+		coords := MustCoords(g.Coords())
+		return Must(NewLinearRing(coords...))
 	case POLYGON:
-		extRing := Must(g.Shell())
-		cs := MustCoordSeq(MustCoordSeq(extRing.CoordSeq()).Clone())
-		shell := Must(NewLinearRing(cs))
-		nIntRing, err := g.NInteriorRing()
+		shell := Must(g.Shell())
+		shellCoords := MustCoords(shell.Coords())
+		holes, err := g.Holes()
 		if err != nil {
 			panic(err)
 		}
-		var holes []*Geometry
-		for i := 0; i < nIntRing; i++ {
-			tmp := Must(g.InteriorRing(i))
-			cs := MustCoordSeq(MustCoordSeq(tmp.CoordSeq()).Clone())
-			holes = append(holes, Must(NewLinearRing(cs)))
+		holesCoords := make([][]Coord, len(holes))
+		for i, ring := range holes {
+			holesCoords[i] = MustCoords(ring.Coords())
 		}
-		return Must(NewPolygon(shell, holes...))
+		return Must(NewPolygon(shellCoords, holesCoords...))
 	case MULTIPOINT, MULTILINESTRING, MULTIPOLYGON, GEOMETRYCOLLECTION:
 		n, err := g.NGeometry()
 		if err != nil {
@@ -151,7 +147,6 @@ func TestGeomConstructors(t *testing.T) {
 		t.Errorf("Fine-grained geometry reconstruction failed")
 	}
 }
-*/
 
 func TestArea(t *testing.T) {
 	g1 := Must(FromWKT("POLYGON((-1 -1, 1 -1, 1 1, -1 1, -1 -1))"))
@@ -275,7 +270,7 @@ func TestHoles(t *testing.T) {
                                   (1 1, 2 1, 2 2, 1 2, 1 1),
                                   (1 3, 2 3, 2 4, 1 4, 1 3),
                                   (3 2, 4 2, 4 3, 3 3, 3 2))`))
-	tests := [][]string {
+	tests := [][]string{
 		{
 			"LINEARRING(1 1, 2 1, 2 2, 1 2, 1 1)",
 			"LINEARRING(1 3, 2 3, 2 4, 1 4, 1 3)",

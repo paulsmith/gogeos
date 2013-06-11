@@ -369,6 +369,8 @@ func (g *Geometry) Holes() ([]*Geometry, error) {
 	return holes, nil
 }
 
+// XXX: Holes() returns a [][]Coord?
+
 // Geometry must be a Polygon
 func (g *Geometry) Shell() (*Geometry, error) {
 	return geomFromC("ExteriorRing", cGEOSGetExteriorRing_r(handle, g.g))

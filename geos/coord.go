@@ -21,7 +21,7 @@ func coordSlice(cs *CoordSeq) ([]Coord, error) {
 	if err != nil {
 		return nil, err
 	}
-	coords := make([]Coord, 0, size)
+	coords := make([]Coord, size)
 	for i := 0; i < size; i++ {
 		x, err := cs.x(i)
 		if err != nil {

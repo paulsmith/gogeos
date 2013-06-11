@@ -13,3 +13,10 @@ func MustCoordSeq(c *CoordSeq, err error) *CoordSeq {
 	}
 	return c
 }
+
+func MustCoords(c []Coord, err error) []Coord {
+	if err != nil {
+		panic(err)
+	}
+	return c
+}
