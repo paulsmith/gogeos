@@ -460,6 +460,12 @@ func (g *Geometry) Relate(other *Geometry) (string, error) {
 	return s, nil
 }
 
+func (g *Geometry) RelatePat(other *Geometry, pat string) (bool, error) {
+	cs := C.CString(pat)
+	defer C.free(unsafe.Pointer(cs))
+	return boolFromC("RelatePat", cGEOSRelatePattern_r(handle, g.g, other.g, cs))
+}
+
 // various wrappers around C API
 
 type unaryTopo func(C.GEOSContextHandle_t, *C.GEOSGeometry) *C.GEOSGeometry

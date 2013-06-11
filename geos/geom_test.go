@@ -924,3 +924,30 @@ func TestRelate(t *testing.T) {
 		}
 	}
 }
+
+var relatePatTests = []struct {
+	g1, g2 string
+	pat    string
+	relate bool
+}{
+	{
+		"POLYGON ((60 160, 220 160, 220 20, 60 20, 60 160))",
+		"POLYGON ((60 160, 20 200, 260 200, 140 80, 60 160))",
+		"212101212",
+		true,
+	},
+}
+
+func TestRelatePat(t *testing.T) {
+	for i, test := range relatePatTests {
+		g1 := Must(FromWKT(test.g1))
+		g2 := Must(FromWKT(test.g2))
+		ok, err := g1.RelatePat(g2, test.pat)
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if ok != test.relate {
+			t.Errorf("#%d want %v got %v", i, test.relate, ok)
+		}
+	}
+}
