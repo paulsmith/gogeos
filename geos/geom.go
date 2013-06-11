@@ -71,31 +71,54 @@ func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 
 // Geometry Constructors
 
-func NewPoint(cs *CoordSeq) (*Geometry, error) {
+func NewPoint(coords ...Coord) (*Geometry, error) {
+	if len(coords) == 0 {
+		return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
+	}
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
+	}
 	return geomFromCoordSeq(cs, "NewPoint", cGEOSGeom_createPoint_r)
 }
 
-func EmptyPoint() (*Geometry, error) {
-	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
-}
-
-func NewLinearRing(cs *CoordSeq) (*Geometry, error) {
+func NewLinearRing(coords ...Coord) (*Geometry, error) {
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
+	}
 	return geomFromCoordSeq(cs, "NewLinearRing", cGEOSGeom_createLinearRing_r)
 }
 
-func NewLineString(cs *CoordSeq) (*Geometry, error) {
+func NewLineString(coords ...Coord) (*Geometry, error) {
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
+	}
 	return geomFromCoordSeq(cs, "NewLineString", cGEOSGeom_createLineString_r)
-}
-
-func EmptyLineString() (*Geometry, error) {
-	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyLineString_r)
 }
 
 func EmptyPolygon() (*Geometry, error) {
 	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPolygon_r)
 }
 
-func NewPolygon(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
+func NewPolygon(shell []Coord, holes ...[]Coord) (*Geometry, error) {
+	ext, err := NewLinearRing(shell...)
+	if err != nil {
+		return nil, err
+	}
+	var ints []*Geometry
+	for i := range holes {
+		g, err := NewLinearRing(holes[i]...)
+		if err != nil {
+			return nil, err
+		}
+		ints = append(ints, g)
+	}
+	return PolygonFromGeom(ext, ints...)
+}
+
+func PolygonFromGeom(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 	var ptrHoles **C.GEOSGeometry
 	// build c array of geom ptrs
 	var holeCPtrs []*C.GEOSGeometry
@@ -109,20 +132,17 @@ func NewPolygon(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 }
 
 func NewCollection(_type GeometryType, geoms ...*Geometry) (*Geometry, error) {
+	if len(geoms) == 0 {
+		return geomFromC("EmptyCollection", cGEOSGeom_createEmptyCollection_r(handle, C.int(_type)))
+	}
 	var ptrGeoms **C.GEOSGeometry
 	// build c array of geom ptrs
 	var geomCPtrs []*C.GEOSGeometry
 	for i := range geoms {
 		geomCPtrs = append(geomCPtrs, geoms[i].g)
 	}
-	if len(geomCPtrs) > 0 {
-		ptrGeoms = &geomCPtrs[0]
-	}
+	ptrGeoms = &geomCPtrs[0]
 	return geomFromC("NewCollection", cGEOSGeom_createCollection_r(handle, C.int(_type), ptrGeoms, C.uint(len(geomCPtrs))))
-}
-
-func EmptyCollection(_type GeometryType) (*Geometry, error) {
-	return geomFromC("EmptyCollection", cGEOSGeom_createEmptyCollection_r(handle, C.int(_type)))
 }
 
 func (g *Geometry) Clone() (*Geometry, error) {
@@ -316,12 +336,6 @@ func (g *Geometry) Normalize() error {
 	return err
 }
 
-// XXX: method to return a slice of interior rings
-
-func (g *Geometry) NInteriorRing() (int, error) {
-	return intFromC("NInteriorRing", cGEOSGetNumInteriorRings_r(handle, g.g), -1)
-}
-
 func (g *Geometry) NPoint() (int, error) {
 	return intFromC("NPoint", cGEOSGeomGetNumPoints_r(handle, g.g), -1)
 }
@@ -339,12 +353,26 @@ func (g *Geometry) Y() (float64, error) {
 }
 
 // Geometry must be a Polygon
-func (g *Geometry) InteriorRing(n int) (*Geometry, error) {
-	return geomFromC("InteriorRing", cGEOSGetInteriorRingN_r(handle, g.g, C.int(n)))
+func (g *Geometry) Holes() ([]*Geometry, error) {
+	n, err := intFromC("NInteriorRing", cGEOSGetNumInteriorRings_r(handle, g.g), -1)
+	if err != nil {
+		return nil, err
+	}
+	holes := make([]*Geometry, n)
+	for i := 0; i < n; i++ {
+		ring, err := geomFromC("InteriorRing", cGEOSGetInteriorRingN_r(handle, g.g, C.int(i)))
+		if err != nil {
+			return nil, err
+		}
+		holes[i] = ring
+	}
+	return holes, nil
 }
 
+// XXX: Holes() returns a [][]Coord?
+
 // Geometry must be a Polygon
-func (g *Geometry) ExteriorRing() (*Geometry, error) {
+func (g *Geometry) Shell() (*Geometry, error) {
 	return geomFromC("ExteriorRing", cGEOSGetExteriorRing_r(handle, g.g))
 }
 
@@ -358,7 +386,18 @@ func (g *Geometry) CoordSeq() (*CoordSeq, error) {
 	if c == nil {
 		return nil, Error()
 	}
-	return CoordSeqFromPtr(c), nil
+	return coordSeqFromPtr(c), nil
+}
+
+// Coords returns a slice of Coord, a sequence of coordinates underlying the
+// point, linestring, or linear ring.
+func (g *Geometry) Coords() ([]Coord, error) {
+	c := C.GEOSGeom_getCoordSeq_r(handle, g.g)
+	if c == nil {
+		return nil, Error()
+	}
+	cs := coordSeqFromPtr(c)
+	return coordSlice(cs)
 }
 
 func (g *Geometry) Dimension() int {
