@@ -75,29 +75,27 @@ func NewPoint(coords ...Coord) (*Geometry, error) {
 	if len(coords) == 0 {
 		return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
 	}
-	// XXX: handle 3-dim
-	cs := NewCoordSeq(len(coords), 2)
-	for i, c := range coords {
-		if err := cs.setX(i, c.X); err != nil {
-			return nil, err
-		}
-		if err := cs.setY(i, c.Y); err != nil {
-			return nil, err
-		}
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
 	}
 	return geomFromCoordSeq(cs, "NewPoint", cGEOSGeom_createPoint_r)
 }
 
-func NewLinearRing(cs *CoordSeq) (*Geometry, error) {
+func NewLinearRing(coords ...Coord) (*Geometry, error) {
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
+	}
 	return geomFromCoordSeq(cs, "NewLinearRing", cGEOSGeom_createLinearRing_r)
 }
 
-func NewLineString(cs *CoordSeq) (*Geometry, error) {
+func NewLineString(coords ...Coord) (*Geometry, error) {
+	cs, err := coordSeqFromSlice(coords)
+	if err != nil {
+		return nil, err
+	}
 	return geomFromCoordSeq(cs, "NewLineString", cGEOSGeom_createLineString_r)
-}
-
-func EmptyLineString() (*Geometry, error) {
-	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyLineString_r)
 }
 
 func EmptyPolygon() (*Geometry, error) {

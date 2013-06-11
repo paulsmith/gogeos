@@ -27,6 +27,20 @@ func coordSeqFromPtr(c *C.GEOSCoordSequence) *CoordSeq {
 	return cs
 }
 
+func coordSeqFromSlice(coords []Coord) (*CoordSeq, error) {
+	// XXX: handle 3-dim
+	cs := NewCoordSeq(len(coords), 2)
+	for i, c := range coords {
+		if err := cs.setX(i, c.X); err != nil {
+			return nil, err
+		}
+		if err := cs.setY(i, c.Y); err != nil {
+			return nil, err
+		}
+	}
+	return cs, nil
+}
+
 func (c *CoordSeq) Clone() (*CoordSeq, error) {
 	p := C.GEOSCoordSeq_clone_r(handle, c.c)
 	if p == nil {

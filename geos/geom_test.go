@@ -827,41 +827,35 @@ func TestClone(t *testing.T) {
 
 // Constructors
 
-var constructorTests = []struct {
+var basicConstructorTests = []struct {
 	coords []Coord
 	ctor func(...Coord) (*Geometry, error)
+	err bool
 	empty bool
 }{
-	{nil, NewPoint, true},
-	{[]Coord{NewCoord(-117, 35)}, NewPoint, false},
+	{nil, NewPoint, false, true},
+	{[]Coord{NewCoord(-117, 35)}, NewPoint, false, false},
+	{[]Coord{NewCoord(-117, 35), NewCoord(0, 0)}, NewPoint, true, false},
+	{nil, NewLineString, false, true},
+	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(20, 20)}, NewLineString, false, false},
 }
 
 func TestConstructors(t *testing.T) {
-	for i, test := range constructorTests {
+	for i, test := range basicConstructorTests {
 		geom, err := test.ctor(test.coords...)
 		if err != nil {
-			t.Errorf("#%d: ctor error: %v", i, err)
+			if !test.err {
+				t.Errorf("#%d: ctor: want no error, got: %v", i, err)
+			}
+			continue
 		}
 		empty, err := geom.IsEmpty()
 		if err != nil {
 			t.Errorf("#%d: empty error: %v", i, err)
+			continue
 		}
 		if empty != test.empty {
 			t.Errorf("#%d: empty: want %v, got %v", i, test.empty, empty)
 		}
-	}
-}
-
-func xTestNewPoint(t *testing.T) {
-	p1, err := NewPoint()
-	if err != nil {
-		t.Errorf("error: %v", err)
-	}
-	empty, err := p1.IsEmpty()
-	if err != nil {
-		t.Errorf("error: %v", err)
-	}
-	if !empty {
-		t.Errorf("expected empty geom")
 	}
 }
