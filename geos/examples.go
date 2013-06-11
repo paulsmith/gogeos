@@ -32,6 +32,7 @@ func main() {
 	ex7()
 	ex8()
 	ex9()
+	ex10()
 }
 
 func ex1() {
@@ -96,6 +97,12 @@ func ex9() {
 	example("example9-unmerged-linestrings.png", linestrings...)
 	merged := geos.Must(geos.Must(geos.NewCollection(geos.MULTILINESTRING, linestrings...)).LineMerge())
 	example("example9-merged-linestrings.png", merged)
+}
+
+func ex10() {
+	l := geos.Must(geos.FromWKT("LINESTRING (0 2, 6 2, 3 4, 4.5 8, 1 8, 3 0)"))
+	b := geos.Must(l.ConvexHull())
+	example("example10-convex-hull.png", b, l)
 }
 
 func example(filename string, geoms ...*geos.Geometry) {
