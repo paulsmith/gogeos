@@ -829,9 +829,9 @@ func TestClone(t *testing.T) {
 
 var basicConstructorTests = []struct {
 	coords []Coord
-	ctor func(...Coord) (*Geometry, error)
-	err bool
-	empty bool
+	ctor   func(...Coord) (*Geometry, error)
+	err    bool
+	empty  bool
 }{
 	{nil, NewPoint, false, true},
 	{[]Coord{NewCoord(-117, 35)}, NewPoint, false, false},
@@ -867,7 +867,7 @@ func TestConstructors(t *testing.T) {
 var polygonConstructorTests = []struct {
 	shell []Coord
 	holes [][]Coord
-	err bool
+	err   bool
 	empty bool
 }{
 	{nil, nil, false, true},
