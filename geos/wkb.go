@@ -42,7 +42,7 @@ func (d *WKBDecoder) Decode(wkb []byte) (*Geometry, error) {
 	if g == nil {
 		return nil, Error()
 	}
-	return GeomFromPtr(g), nil
+	return geomFromPtr(g), nil
 }
 
 func (d *WKBDecoder) DecodeHex(wkbHex string) (*Geometry, error) {

@@ -13,7 +13,7 @@ type Geometry struct {
 	g *C.GEOSGeometry
 }
 
-func GeomFromPtr(p *C.GEOSGeometry) *Geometry {
+func geomFromPtr(p *C.GEOSGeometry) *Geometry {
 	g := &Geometry{p}
 	runtime.SetFinalizer(g, (*Geometry).destroy)
 	return g
@@ -55,7 +55,7 @@ func (g *Geometry) Project(p *Geometry) float64 {
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 	p := C.GEOSInterpolate_r(handle, g.g, C.double(dist))
 	// XXX: test for exception
-	return GeomFromPtr(p), nil
+	return geomFromPtr(p), nil
 }
 
 // Buffer functions
@@ -441,7 +441,7 @@ func geomFromC(name string, ptr *C.GEOSGeometry) (*Geometry, error) {
 	if ptr == nil {
 		return nil, Error()
 	}
-	return GeomFromPtr(ptr), nil
+	return geomFromPtr(ptr), nil
 }
 
 func boolFromC(name string, c C.char) (bool, error) {
