@@ -7,33 +7,28 @@ import "C"
 
 import (
 	"encoding/hex"
-	"errors"
 	"runtime"
 	"unsafe"
 )
 
-var (
-	ErrWKBWrite = errors.New("geos: writing WKB")
-)
-
-type WKBDecoder struct {
+type wkbDecoder struct {
 	r *C.GEOSWKBReader
 }
 
-func NewWKBDecoder() *WKBDecoder {
+func newWkbDecoder() *wkbDecoder {
 	r := cGEOSWKBReader_create_r(handle)
-	d := &WKBDecoder{r}
-	runtime.SetFinalizer(d, (*WKBDecoder).destroy)
+	d := &wkbDecoder{r}
+	runtime.SetFinalizer(d, (*wkbDecoder).destroy)
 	return d
 }
 
-func (d *WKBDecoder) destroy() {
+func (d *wkbDecoder) destroy() {
 	// XXX: mutex
 	cGEOSWKBReader_destroy_r(handle, d.r)
 	d.r = nil
 }
 
-func (d *WKBDecoder) Decode(wkb []byte) (*Geometry, error) {
+func (d *wkbDecoder) decode(wkb []byte) (*Geometry, error) {
 	var cwkb []C.uchar
 	for i := range wkb {
 		cwkb = append(cwkb, C.uchar(wkb[i]))
@@ -45,29 +40,29 @@ func (d *WKBDecoder) Decode(wkb []byte) (*Geometry, error) {
 	return geomFromPtr(g), nil
 }
 
-func (d *WKBDecoder) DecodeHex(wkbHex string) (*Geometry, error) {
+func (d *wkbDecoder) decodeHex(wkbHex string) (*Geometry, error) {
 	wkb, err := hex.DecodeString(wkbHex)
 	if err != nil {
 		return nil, err
 	}
-	return d.Decode(wkb)
+	return d.decode(wkb)
 }
 
-type WKBEncoder struct {
+type wkbEncoder struct {
 	w *C.GEOSWKBWriter
 }
 
-func NewWKBEncoder() *WKBEncoder {
+func newWkbEncoder() *wkbEncoder {
 	w := C.GEOSWKBWriter_create_r(handle)
 	if w == nil {
 		return nil
 	}
-	e := &WKBEncoder{w}
-	runtime.SetFinalizer(e, (*WKBEncoder).destroy)
+	e := &wkbEncoder{w}
+	runtime.SetFinalizer(e, (*wkbEncoder).destroy)
 	return e
 }
 
-func encodeWkb(e *WKBEncoder, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEOSWKBWriter, *C.GEOSGeometry, *C.size_t) *C.uchar) ([]byte, error) {
+func encodeWkb(e *wkbEncoder, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEOSWKBWriter, *C.GEOSGeometry, *C.size_t) *C.uchar) ([]byte, error) {
 	var size C.size_t
 	bytes := fn(handle, e.w, g.g, &size)
 	if bytes == nil {
@@ -84,15 +79,15 @@ func encodeWkb(e *WKBEncoder, g *Geometry, fn func(C.GEOSContextHandle_t, *C.GEO
 	return out, nil
 }
 
-func (e *WKBEncoder) Encode(g *Geometry) ([]byte, error) {
+func (e *wkbEncoder) encode(g *Geometry) ([]byte, error) {
 	return encodeWkb(e, g, cGEOSWKBWriter_write_r)
 }
 
-func (e *WKBEncoder) EncodeHex(g *Geometry) ([]byte, error) {
+func (e *wkbEncoder) encodeHex(g *Geometry) ([]byte, error) {
 	return encodeWkb(e, g, cGEOSWKBWriter_writeHEX_r)
 }
 
-func (e *WKBEncoder) destroy() {
+func (e *wkbEncoder) destroy() {
 	// XXX: mutex
 	C.GEOSWKBWriter_destroy_r(handle, e.w)
 	e.w = nil

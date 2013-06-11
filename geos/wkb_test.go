@@ -12,12 +12,12 @@ var wkbDecoderTests = []struct {
 	{[]byte{1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 64, 93, 192, 0, 0, 0, 0, 0, 128, 65, 64}, "POINT(-117 35)"},
 }
 
-func TestWKBDecoderRead(t *testing.T) {
-	wktDecoder := NewWKTDecoder()
-	wkbDecoder := NewWKBDecoder()
+func TestWkbDecoderRead(t *testing.T) {
+	wktDecoder := newWktDecoder()
+	wkbDecoder := newWkbDecoder()
 	for i, test := range wkbDecoderTests {
-		g1 := Must(wkbDecoder.Decode(test.wkb))
-		g2 := Must(wktDecoder.Decode(test.wkt))
+		g1 := Must(wkbDecoder.decode(test.wkb))
+		g2 := Must(wktDecoder.decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("#%d: should equal! got %v want %v", i, g1, g2)
 		}
@@ -31,12 +31,12 @@ var wkbDecoderHexTests = []struct {
 	{"01010000000000000000405DC00000000000804140", "POINT(-117 35)"},
 }
 
-func TestWKBDecoderHexRead(t *testing.T) {
-	wktDecoder := NewWKTDecoder()
-	wkbDecoder := NewWKBDecoder()
+func TestWkbDecoderHexRead(t *testing.T) {
+	wktDecoder := newWktDecoder()
+	wkbDecoder := newWkbDecoder()
 	for i, test := range wkbDecoderHexTests {
-		g1 := Must(wkbDecoder.DecodeHex(test.hex))
-		g2 := Must(wktDecoder.Decode(test.wkt))
+		g1 := Must(wkbDecoder.decodeHex(test.hex))
+		g2 := Must(wktDecoder.decode(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("#%d: should equal! got %v want %v", i, g1, g2)
 		}
@@ -50,12 +50,12 @@ var wkbEncoderTests = []struct {
 	{"POINT(-117 35)", []byte{1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 64, 93, 192, 0, 0, 0, 0, 0, 128, 65, 64}},
 }
 
-func TestWKBEncoderEncode(t *testing.T) {
-	wktDecoder := NewWKTDecoder()
-	wkbEncoder := NewWKBEncoder()
+func TestWkbEncoderEncode(t *testing.T) {
+	wktDecoder := newWktDecoder()
+	wkbEncoder := newWkbEncoder()
 	for i, test := range wkbEncoderTests {
-		g1 := Must(wktDecoder.Decode(test.wkt))
-		actual, err := wkbEncoder.Encode(g1)
+		g1 := Must(wktDecoder.decode(test.wkt))
+		actual, err := wkbEncoder.encode(g1)
 		if err != nil {
 			panic(err)
 		}
@@ -72,12 +72,12 @@ var wkbEncoderHexTests = []struct {
 	{"POINT(-117 35)", []byte("01010000000000000000405DC00000000000804140")},
 }
 
-func TestWKBEncoderEncodeHex(t *testing.T) {
-	wktDecoder := NewWKTDecoder()
-	wkbEncoder := NewWKBEncoder()
+func TestWkbEncoderEncodeHex(t *testing.T) {
+	wktDecoder := newWktDecoder()
+	wkbEncoder := newWkbEncoder()
 	for i, test := range wkbEncoderHexTests {
-		g1 := Must(wktDecoder.Decode(test.wkt))
-		actual, err := wkbEncoder.EncodeHex(g1)
+		g1 := Must(wktDecoder.decode(test.wkt))
+		actual, err := wkbEncoder.encodeHex(g1)
 		if err != nil {
 			panic(err)
 		}

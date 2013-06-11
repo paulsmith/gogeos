@@ -8,22 +8,22 @@ var wktEncoderTests = []struct{ in, out string }{
 	{"POINT(-117 33)", "POINT (-117.0000000000000000 33.0000000000000000)"},
 }
 
-func TestWKTEncoder(t *testing.T) {
-	encoder := NewWKTEncoder()
-	decoder := NewWKTDecoder()
+func TestWktEncoder(t *testing.T) {
+	encoder := newWktEncoder()
+	decoder := newWktDecoder()
 	var geom *Geometry
 	var err error
 	for _, test := range wktEncoderTests {
-		geom, err = decoder.Decode(test.in)
+		geom, err = decoder.decode(test.in)
 		if err != nil {
-			t.Errorf("WKTDecoder.Decode(): %v", err)
+			t.Errorf("wktDecoder.decode(): %v", err)
 		}
-		actual, err := encoder.Encode(geom)
+		actual, err := encoder.encode(geom)
 		if err != nil {
-			t.Errorf("WKTEncoder.Encode(): %v", err)
+			t.Errorf("wktEncoder.encode(): %v", err)
 		}
 		if actual != test.out {
-			t.Errorf("WKTEncoder.Encode(): want %v, got %v", test.out, actual)
+			t.Errorf("wktEncoder.encode(): want %v, got %v", test.out, actual)
 		}
 	}
 }
