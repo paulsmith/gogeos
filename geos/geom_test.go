@@ -899,3 +899,28 @@ func TestLineStringLinearRingEqual(t *testing.T) {
 		t.Errorf("expected equal!")
 	}
 }
+
+var relateTests = []struct {
+	g1, g2 string
+	pat    string
+}{
+	{
+		"POLYGON ((60 160, 220 160, 220 20, 60 20, 60 160))",
+		"POLYGON ((60 160, 20 200, 260 200, 140 80, 60 160))",
+		"212101212",
+	},
+}
+
+func TestRelate(t *testing.T) {
+	for i, test := range relateTests {
+		g1 := Must(FromWKT(test.g1))
+		g2 := Must(FromWKT(test.g2))
+		pat, err := g1.Relate(g2)
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if pat != test.pat {
+			t.Errorf("#%d want %v got %v", i, test.pat, pat)
+		}
+	}
+}

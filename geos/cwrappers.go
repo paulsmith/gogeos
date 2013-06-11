@@ -673,7 +673,3 @@ func cGEOSWKBWriter_getIncludeSRID_r(handle C.GEOSContextHandle_t, writer *C.GEO
 func cGEOSWKBWriter_setIncludeSRID_r(handle C.GEOSContextHandle_t, writer *C.GEOSWKBWriter, writeSRID C.char) {
 	C.GEOSWKBWriter_setIncludeSRID_r(handle, writer, writeSRID)
 }
-
-func cGEOSFree_r(handle C.GEOSContextHandle_t, buffer *C.void) {
-	C.GEOSFree_r(handle, unsafe.Pointer(buffer))
-}

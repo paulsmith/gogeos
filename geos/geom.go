@@ -7,6 +7,7 @@ import "C"
 
 import (
 	"runtime"
+	"unsafe"
 )
 
 type Geometry struct {
@@ -445,6 +446,18 @@ func (g *Geometry) HausdorffDistance(other *Geometry) (float64, error) {
 func (g *Geometry) HausdorffDistanceDensify(other *Geometry, densifyFrac float64) (float64, error) {
 	var d C.double
 	return float64FromC("HausdorffDistanceDensify", cGEOSHausdorffDistanceDensify_r(handle, g.g, other.g, C.double(densifyFrac), &d), d)
+}
+
+// DE-9IM
+
+func (g *Geometry) Relate(other *Geometry) (string, error) {
+	cs := cGEOSRelate_r(handle, g.g, other.g)
+	if cs == nil {
+		return "", Error()
+	}
+	s := C.GoString(cs)
+	C.GEOSFree_r(handle, unsafe.Pointer(cs))
+	return s, nil
 }
 
 // various wrappers around C API
