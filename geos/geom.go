@@ -19,6 +19,8 @@ func geomFromPtr(p *C.GEOSGeometry) *Geometry {
 	return g
 }
 
+// FromWKT is a factory function that returns a geometry decoded from a
+// Well-Known Text (WKT) string
 func FromWKT(wkt string) (*Geometry, error) {
 	decoder := NewWKTDecoder()
 	return decoder.Decode(wkt)
@@ -33,10 +35,11 @@ func (g *Geometry) ToWKT() (string, error) {
 	encoder := NewWKTEncoder()
 	return encoder.Encode(g)
 }
+
 func (g *Geometry) String() string {
 	str, err := g.ToWKT()
 	if err != nil {
-		return ""
+		return "" // XXX: better to panic?
 	}
 	return str
 }
