@@ -71,12 +71,21 @@ func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 
 // Geometry Constructors
 
-func NewPoint(cs *CoordSeq) (*Geometry, error) {
+func NewPoint(coords ...Coord) (*Geometry, error) {
+	if len(coords) == 0 {
+		return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
+	}
+	// XXX: handle 3-dim
+	cs := NewCoordSeq(len(coords), 2)
+	for i, c := range coords {
+		if err := cs.setX(i, c.X); err != nil {
+			return nil, err
+		}
+		if err := cs.setY(i, c.Y); err != nil {
+			return nil, err
+		}
+	}
 	return geomFromCoordSeq(cs, "NewPoint", cGEOSGeom_createPoint_r)
-}
-
-func EmptyPoint() (*Geometry, error) {
-	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
 }
 
 func NewLinearRing(cs *CoordSeq) (*Geometry, error) {
@@ -358,7 +367,7 @@ func (g *Geometry) CoordSeq() (*CoordSeq, error) {
 	if c == nil {
 		return nil, Error()
 	}
-	return CoordSeqFromPtr(c), nil
+	return coordSeqFromPtr(c), nil
 }
 
 func (g *Geometry) Dimension() int {

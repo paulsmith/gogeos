@@ -1,7 +1,7 @@
 package geos
 
 import (
-	"io/ioutil"
+	//"io/ioutil"
 	"math"
 	"testing"
 )
@@ -93,6 +93,7 @@ func TestGeometryBuffer(t *testing.T) {
 
 const bufferPoly = `POLYGON ((1.0000000000000000 0.0000000000000000, 0.9807852804032304 -0.1950903220161281, 0.9238795325112870 -0.3826834323650894, 0.8314696123025456 -0.5555702330196017, 0.7071067811865481 -0.7071067811865470, 0.5555702330196032 -0.8314696123025447, 0.3826834323650908 -0.9238795325112863, 0.1950903220161296 -0.9807852804032302, 0.0000000000000016 -1.0000000000000000, -0.1950903220161265 -0.9807852804032308, -0.3826834323650878 -0.9238795325112875, -0.5555702330196004 -0.8314696123025465, -0.7071067811865459 -0.7071067811865492, -0.8314696123025438 -0.5555702330196043, -0.9238795325112857 -0.3826834323650923, -0.9807852804032299 -0.1950903220161312, -1.0000000000000000 -0.0000000000000032, -0.9807852804032311 0.1950903220161249, -0.9238795325112882 0.3826834323650864, -0.8314696123025475 0.5555702330195990, -0.7071067811865505 0.7071067811865446, -0.5555702330196060 0.8314696123025428, -0.3826834323650936 0.9238795325112852, -0.1950903220161322 0.9807852804032297, -0.0000000000000037 1.0000000000000000, 0.1950903220161248 0.9807852804032311, 0.3826834323650867 0.9238795325112881, 0.5555702330195996 0.8314696123025469, 0.7071067811865455 0.7071067811865496, 0.8314696123025438 0.5555702330196044, 0.9238795325112859 0.3826834323650920, 0.9807852804032300 0.1950903220161305, 1.0000000000000000 0.0000000000000000))`
 
+/*
 func reconstructGeom(g *Geometry) *Geometry {
 	typeId, err := g.Type()
 	if err != nil {
@@ -150,24 +151,7 @@ func TestGeomConstructors(t *testing.T) {
 		t.Errorf("Fine-grained geometry reconstruction failed")
 	}
 }
-
-func TestEmptyGeomConstructors(t *testing.T) {
-	var tests = []struct {
-		_type string
-		fn    func() (*Geometry, error)
-	}{
-		{"POINT", EmptyPoint},
-		{"LINESTRING", EmptyLineString},
-		{"POLYGON", EmptyPolygon},
-	}
-	for _, test := range tests {
-		g1 := Must(test.fn())
-		expected := Must(FromWKT(test._type + " EMPTY"))
-		if g1.String() != expected.String() {
-			t.Errorf("Empty%s(): not empty! got %v", test._type, expected)
-		}
-	}
-}
+*/
 
 func TestArea(t *testing.T) {
 	g1 := Must(FromWKT("POLYGON((-1 -1, 1 -1, 1 1, -1 1, -1 -1))"))
@@ -838,5 +822,46 @@ func TestClone(t *testing.T) {
 	}
 	if g1.g == g2.g {
 		t.Errorf("Cloned geom's C ptrs should not equal!")
+	}
+}
+
+// Constructors
+
+var constructorTests = []struct {
+	coords []Coord
+	ctor func(...Coord) (*Geometry, error)
+	empty bool
+}{
+	{nil, NewPoint, true},
+	{[]Coord{NewCoord(-117, 35)}, NewPoint, false},
+}
+
+func TestConstructors(t *testing.T) {
+	for i, test := range constructorTests {
+		geom, err := test.ctor(test.coords...)
+		if err != nil {
+			t.Errorf("#%d: ctor error: %v", i, err)
+		}
+		empty, err := geom.IsEmpty()
+		if err != nil {
+			t.Errorf("#%d: empty error: %v", i, err)
+		}
+		if empty != test.empty {
+			t.Errorf("#%d: empty: want %v, got %v", i, test.empty, empty)
+		}
+	}
+}
+
+func xTestNewPoint(t *testing.T) {
+	p1, err := NewPoint()
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+	empty, err := p1.IsEmpty()
+	if err != nil {
+		t.Errorf("error: %v", err)
+	}
+	if !empty {
+		t.Errorf("expected empty geom")
 	}
 }

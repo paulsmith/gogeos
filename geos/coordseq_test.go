@@ -16,14 +16,14 @@ func TestCoordSeq(t *testing.T) {
 		t.Errorf("NewCoordSeq(): got nil from C API")
 	}
 	var err error
-	if err = cs.SetX(test.idx, test.x); err != nil {
-		t.Errorf("CoordSeq.SetX(): %v", err)
+	if err = cs.setX(test.idx, test.x); err != nil {
+		t.Errorf("CoordSeq.setX(): %v", err)
 	}
-	if err = cs.SetY(test.idx, test.y); err != nil {
-		t.Errorf("CoordSeq.SetY(): %v", err)
+	if err = cs.setY(test.idx, test.y); err != nil {
+		t.Errorf("CoordSeq.setY(): %v", err)
 	}
-	if err = cs.SetZ(test.idx, test.z); err != nil {
-		t.Errorf("CoordSeq.SetZ(): %v", err)
+	if err = cs.setZ(test.idx, test.z); err != nil {
+		t.Errorf("CoordSeq.setZ(): %v", err)
 	}
 	var val float64
 	if val, err = cs.GetX(test.idx); err != nil {

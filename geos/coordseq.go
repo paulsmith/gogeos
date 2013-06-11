@@ -18,10 +18,10 @@ func NewCoordSeq(size, dims int) *CoordSeq {
 	if p == nil {
 		return nil
 	}
-	return CoordSeqFromPtr(p)
+	return coordSeqFromPtr(p)
 }
 
-func CoordSeqFromPtr(c *C.GEOSCoordSequence) *CoordSeq {
+func coordSeqFromPtr(c *C.GEOSCoordSequence) *CoordSeq {
 	cs := &CoordSeq{c}
 	runtime.SetFinalizer(cs, (*CoordSeq).destroy)
 	return cs
@@ -32,10 +32,10 @@ func (c *CoordSeq) Clone() (*CoordSeq, error) {
 	if p == nil {
 		return nil, Error()
 	}
-	return CoordSeqFromPtr(p), nil
+	return coordSeqFromPtr(p), nil
 }
 
-func (c *CoordSeq) SetX(idx int, val float64) error {
+func (c *CoordSeq) setX(idx int, val float64) error {
 	i := C.GEOSCoordSeq_setX_r(handle, c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
@@ -43,7 +43,7 @@ func (c *CoordSeq) SetX(idx int, val float64) error {
 	return nil
 }
 
-func (c *CoordSeq) SetY(idx int, val float64) error {
+func (c *CoordSeq) setY(idx int, val float64) error {
 	i := C.GEOSCoordSeq_setY_r(handle, c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
@@ -51,7 +51,7 @@ func (c *CoordSeq) SetY(idx int, val float64) error {
 	return nil
 }
 
-func (c *CoordSeq) SetZ(idx int, val float64) error {
+func (c *CoordSeq) setZ(idx int, val float64) error {
 	i := C.GEOSCoordSeq_setZ_r(handle, c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
