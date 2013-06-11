@@ -891,3 +891,11 @@ func TestPolygonConstructor(t *testing.T) {
 		}
 	}
 }
+
+func TestLineStringLinearRingEqual(t *testing.T) {
+	line := Must(FromWKT("LINESTRING (0 0, 10 10, 10 0, 0 0)"))
+	ring := Must(FromWKT("LINEARRING (0 0, 10 10, 10 0, 0 0)"))
+	if !mustEqual(line.Equals(ring)) {
+		t.Errorf("expected equal!")
+	}
+}
