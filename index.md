@@ -115,31 +115,31 @@ Then the following operations will produce new geometries in magenta:
 
 <div class="pure-g-r">
 	<div class="pure-u-1-2">
-		<h4>A.Intersection(B)</h4>
+		<h4><code>A.Intersection(B)</code></h4>
 
 		<p><img src="img/example3-intersection.png" alt=""></p>
 	</div>
 
 	<div class="pure-u-1-2">
-		<h4>A.Union(B)</h4>
+		<h4><code>A.Union(B)</code></h4>
 
 		<p><img src="img/example4-union.png" alt=""></p>
 	</div>
 
 	<div class="pure-u-1-2">
-		<h4>A.Difference(B)</h4>
+		<h4><code>A.Difference(B)</code></h4>
 
 		<p><img src="img/example5-difference.png" alt=""></p>
 	</div>
 
 	<div class="pure-u-1-2">
-		<h4>B.Difference(A)</h4>
+		<h4><code>B.Difference(A)</code></h4>
 
 		<p><img src="img/example6-difference.png" alt=""></p>
 	</div>
 
 	<div class="pure-u-1-2">
-		<h4>A.SymDifference(B)</h4>
+		<h4><code>A.SymDifference(B)</code></h4>
 
 		<p><img src="img/example7-symdifference.png" alt=""></p>
 	</div>
@@ -148,12 +148,28 @@ Then the following operations will produce new geometries in magenta:
 ### Unary topology operations
 
 gogeos can produce new geometries based on a operation performed on a single
-geometry, perhaps with some input. For example, given a linestring, the
-`Buffer()` method produces a new polygon:
+geometry, perhaps with some input. For example, given a linestring `geom`
+(orange), the `Buffer()` and `ConvexHull()` methods produce a new polygons
+(blue):
 
-#### geom.Buffer(2.5)
-
-![](img/example8-buffer.png)
+<div class="pure-g-r">
+	<div class="pure-u-1-2">
+	    <h4>
+	        <code>geom.Buffer(2.5)</code>
+	    </h4>
+	    <p>
+	        <img src="img/example8-buffer.png" alt="" />
+	    </p>
+	</div>
+	<div class="pure-u-1-2">
+	    <h4>
+	        <code>geom.ConvexHull()</code>
+	    </h4>
+	    <p>
+	        <img src="img/example10-convex-hull.png" alt="" />
+	    </p>
+	</div>
+</div>
 
 ### Merging linestrings
 
