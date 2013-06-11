@@ -57,8 +57,8 @@ gogeos is an open source project (MIT license).
 
  * [Source code: GitHub project](https://github.com/paulsmith/gogeos)
  * [Issues tracker](https://github.com/paulsmith/gogeos/issues)
- * [Mailing list: gogeos@googlegroups.com](https://groups.google.com/forum/?fromgroups#!forum/gogeos)
- * [IRC: #gogeos on freenode](irc://irc.freenode.net/gogeos)
+ * [Mailing list](https://groups.google.com/forum/?fromgroups#!forum/gogeos): [gogeos@googlegroups.com](mailto:gogeos@googlegroups.com)
+ * IRC: [#gogeos](irc://irc.freenode.net/gogeos) on freenode
 
 <h2 id="installation">Installation</h2>
 
@@ -101,9 +101,9 @@ $ go get github.com/paulsmith/gogeos/geos
 
 ### Binary topology operations
 
-gogeos supports binary topology operations, which produces a new geometry from
-a topological operation performed on two input geometries. For example, say we
-have these two overlapping polygons, A in blue and B in orange:
+gogeos provides binary topology operations, which produce a new geometry from
+spatial analysis performed on two input geometries. For example, say we have
+these two overlapping polygons, A in blue and B in orange:
 
 ![](img/example2-a-b.png)
 
@@ -113,45 +113,37 @@ the output of gogeos functions.)*
 
 Then the following operations will produce new geometries in magenta:
 
-#### Intersection
+<div class="pure-g-r">
+	<div class="pure-u-1-2">
+		<h4>Intersection</h4>
 
-```go
-A.Intersection(B)
-```
+		<p><img src="img/example3-intersection.png" alt=""></p>
+	</div>
 
-![](img/example3-intersection.png)
+	<div class="pure-u-1-2">
+		<h4>Union</h4>
 
-#### Union
+		<p><img src="img/example4-union.png" alt=""></p>
+	</div>
 
-```go
-A.Union(B)
-```
+	<div class="pure-u-1-2">
+		<h4>Difference (A of B)</h4>
 
-![](img/example4-union.png)
+		<p><img src="img/example5-difference.png" alt=""></p>
+	</div>
 
-#### Difference (A of B)
+	<div class="pure-u-1-2">
+		<h4>Difference (B of A)</h4>
 
-```go
-A.Difference(B)
-```
+		<p><img src="img/example6-difference.png" alt=""></p>
+	</div>
 
-![](img/example5-difference.png)
+	<div class="pure-u-1-2">
+		<h4>Symmetric difference</h4>
 
-#### Difference (B of A)
-
-```go
-B.Difference(A)
-```
-
-![](img/example6-difference.png)
-
-#### Symmetric difference
-
-```go
-A.SymDifference(B)
-```
-
-![](img/example7-symdifference.png)
+		<p><img src="img/example7-symdifference.png" alt=""></p>
+	</div>
+</div>
 
 ### Unary topology operations
 
@@ -160,10 +152,6 @@ geometry, perhaps with some input. For example, given a linestring, the
 `Buffer()` method produces a new polygon:
 
 #### Buffer
-
-```go
-g.Buffer(2.5)
-```
 
 ![](img/example8-buffer.png)
 
@@ -182,13 +170,24 @@ coll := geos.Must(geos.NewCollection(geos.MULTILINESTRING, linestrings...))
 coll.LineMerge()
 ```
 
-*Before:*
-
-![](img/example9-unmerged-linestrings.png)
-
-*After:*
-
-![](img/example9-merged-linestrings.png)
+<div class="pure-g-r">
+	<div class="pure-u-1-2">
+	    <p>
+	        <i>Before</i>
+	    </p>
+		<p>
+	        <img src="img/example9-unmerged-linestrings.png">
+		</p>
+	</div>
+	<div class="pure-u-1-2">
+	    <p>
+	        <i>After</i>
+	    </p>
+		<p>
+	        <img src="img/example9-merged-linestrings.png">
+		</p>
+	</div>
+</div>
 
 *These examples were inspired by the developer’s guide to the
 [JTS](http://www.vividsolutions.com/jts/JTSHome.htm)*
