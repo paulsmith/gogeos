@@ -102,7 +102,23 @@ func EmptyPolygon() (*Geometry, error) {
 	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPolygon_r)
 }
 
-func NewPolygon(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
+func NewPolygon(shell []Coord, holes ...[]Coord) (*Geometry, error) {
+	ext, err := NewLinearRing(shell...)
+	if err != nil {
+		return nil, err
+	}
+	var ints []*Geometry
+	for i := range holes {
+		g, err := NewLinearRing(holes[i]...)
+		if err != nil {
+			return nil, err
+		}
+		ints = append(ints, g)
+	}
+	return PolygonFromGeom(ext, ints...)
+}
+
+func PolygonFromGeom(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 	var ptrHoles **C.GEOSGeometry
 	// build c array of geom ptrs
 	var holeCPtrs []*C.GEOSGeometry

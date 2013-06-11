@@ -838,11 +838,52 @@ var basicConstructorTests = []struct {
 	{[]Coord{NewCoord(-117, 35), NewCoord(0, 0)}, NewPoint, true, false},
 	{nil, NewLineString, false, true},
 	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(20, 20)}, NewLineString, false, false},
+	{nil, NewLinearRing, false, true},
+	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(10, 0), NewCoord(0, 0)}, NewLinearRing, false, false},
+	{[]Coord{NewCoord(0, 0)}, NewLinearRing, true, false},
+	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(0, 0)}, NewLinearRing, true, false},
 }
 
 func TestConstructors(t *testing.T) {
 	for i, test := range basicConstructorTests {
 		geom, err := test.ctor(test.coords...)
+		if err != nil {
+			if !test.err {
+				t.Errorf("#%d: ctor: want no error, got: %v", i, err)
+			}
+			continue
+		}
+		empty, err := geom.IsEmpty()
+		if err != nil {
+			t.Errorf("#%d: empty error: %v", i, err)
+			continue
+		}
+		if empty != test.empty {
+			t.Errorf("#%d: empty: want %v, got %v", i, test.empty, empty)
+		}
+	}
+}
+
+var polygonConstructorTests = []struct {
+	shell []Coord
+	holes [][]Coord
+	err bool
+	empty bool
+}{
+	{nil, nil, false, true},
+	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(10, 0), NewCoord(0, 0)}, nil, false, false},
+	{
+		[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(10, 0), NewCoord(0, 0)},
+		[][]Coord{[]Coord{NewCoord(2, 1), NewCoord(2, 2), NewCoord(3, 1), NewCoord(2, 1)}},
+		false,
+		false,
+	},
+	{[]Coord{NewCoord(0, 0), NewCoord(10, 10), NewCoord(10, 0)}, nil, true, false},
+}
+
+func TestPolygonConstructor(t *testing.T) {
+	for i, test := range polygonConstructorTests {
+		geom, err := NewPolygon(test.shell, test.holes...)
 		if err != nil {
 			if !test.err {
 				t.Errorf("#%d: ctor: want no error, got: %v", i, err)
