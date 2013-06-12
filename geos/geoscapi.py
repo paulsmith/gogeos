@@ -78,8 +78,10 @@ def cgo_func_wrappers(filename):
                 threadsafe.append(func)
 
     print("""
-// Created mechanically from C API header - DO NOT EDIT
 package geos
+
+// Created mechanically from C API header - DO NOT EDIT
+
 /*
 #include <geos_c.h>
 */
