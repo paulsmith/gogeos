@@ -40,7 +40,7 @@ func main() {
 
 <h2 id="overview">Overview</h2>
 
-### Functionality
+<h3 id="functionality">Functionality</h3>
 
  * Binary predicates - intersects, disjoint, etc.
  * Topology operations - difference, union, etc.
@@ -53,7 +53,7 @@ func main() {
 
 gogeos is an open source project (MIT license).
 
-### Community
+<h3 id="community">Community</h3>
 
  * [Source code: GitHub project](https://github.com/paulsmith/gogeos)
  * [Issues tracker](https://github.com/paulsmith/gogeos/issues)
