@@ -494,7 +494,7 @@ func (g *Geometry) NCoordinate() (int, error) {
 }
 
 // Geometry must be a LineString, LinearRing, or Point.
-func (g *Geometry) coordSeq() (*CoordSeq, error) {
+func (g *Geometry) coordSeq() (*coordSeq, error) {
 	c := C.GEOSGeom_getCoordSeq_r(handle, g.g)
 	if c == nil {
 		return nil, Error()
@@ -621,7 +621,7 @@ func (g *Geometry) binaryPred(name string, cfn binaryPred, other *Geometry) (boo
 	return boolFromC(name, cfn(handle, g.g, other.g))
 }
 
-func geomFromCoordSeq(cs *CoordSeq, name string, cfn func(C.GEOSContextHandle_t, *C.GEOSCoordSequence) *C.GEOSGeometry) (*Geometry, error) {
+func geomFromCoordSeq(cs *coordSeq, name string, cfn func(C.GEOSContextHandle_t, *C.GEOSCoordSequence) *C.GEOSGeometry) (*Geometry, error) {
 	return geomFromC(name, cfn(handle, cs.c))
 }
 

@@ -16,7 +16,7 @@ func (c Coord) String() string {
 	return fmt.Sprintf("%f %f", c.X, c.Y)
 }
 
-func coordSlice(cs *CoordSeq) ([]Coord, error) {
+func coordSlice(cs *coordSeq) ([]Coord, error) {
 	size, err := cs.size()
 	if err != nil {
 		return nil, err

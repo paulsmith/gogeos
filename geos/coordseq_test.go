@@ -11,9 +11,9 @@ func TestCoordSeq(t *testing.T) {
 	}{
 		3, 2, 1, 3.14, 0.0, -1000.1,
 	}
-	cs := NewCoordSeq(test.size, test.dims)
+	cs := newCoordSeq(test.size, test.dims)
 	if cs == nil {
-		t.Errorf("NewCoordSeq(): got nil from C API")
+		t.Errorf("newCoordSeq(): got nil from C API")
 	}
 	var err error
 	if err = cs.setX(test.idx, test.x); err != nil {
