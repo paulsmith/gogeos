@@ -1,6 +1,7 @@
 package geos
 
 import (
+	"fmt"
 	"io/ioutil"
 	"math"
 	"testing"
@@ -950,4 +951,10 @@ func TestRelatePat(t *testing.T) {
 			t.Errorf("#%d want %v got %v", i, test.relate, ok)
 		}
 	}
+}
+
+func ExampleFromWKT() {
+	g := Must(FromWKT("POINT (-117 35)"))
+	fmt.Println(g)
+	// Output: POINT (-117.0000000000000000 35.0000000000000000)
 }
