@@ -10,6 +10,14 @@ geometric algorithms.
 
 It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
 
+<h2 id="download">Download</h2>
+
+Current release: **v0.1.0**
+
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.0.zip">Download .zip</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.0.tar.gz">Download .tar.gz</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos">View source</a>
+
 <h2 id="quickstart">Quick start</h2>
 
 ```go
@@ -55,7 +63,7 @@ gogeos is an open source project (MIT license).
 
 <h3 id="community">Community</h3>
 
- * [Source code: GitHub project](https://github.com/paulsmith/gogeos)
+ * [Source code: GitHub project][gh]
  * [Issues tracker](https://github.com/paulsmith/gogeos/issues)
  * [Mailing list](https://groups.google.com/forum/?fromgroups#!forum/gogeos): [gogeos@googlegroups.com](mailto:gogeos@googlegroups.com)
  * IRC: [#gogeos](irc://irc.freenode.net/gogeos) on freenode
@@ -207,3 +215,5 @@ coll.LineMerge()
 
 *These examples were inspired by the developer’s guide to the
 [JTS](http://www.vividsolutions.com/jts/JTSHome.htm)*
+
+[gh]: https://github.com/paulsmith/gogeos
