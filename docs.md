@@ -26,6 +26,13 @@ if err != nil {
 
 Building up geometries from coordinates TK ...
 
+More documentation TK!
+----------------------
+
+In the meantime, see the [godoc API docs](http://godoc.org/github.com/paulsmith/gogeos/geos)
+
+...
+
 Miscellaneous
 -------------
 
