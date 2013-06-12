@@ -248,7 +248,7 @@ func envelope(g *geos.Geometry) Envelope {
 	if err != nil {
 		log.Fatal(err)
 	}
-	cs, err := ring.CoordSeq()
+	cs, err := ring.coordSeq()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -293,7 +293,7 @@ func drawLine(ctxt draw2d.GraphicContext, g *geos.Geometry, c color.Color, width
 		ctxt.SetLineWidth(width)
 	}
 	// XXX: should get a [] of points
-	cs, err := g.CoordSeq()
+	cs, err := g.coordSeq()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -324,7 +324,7 @@ func drawPolygon(ctxt draw2d.GraphicContext, g *geos.Geometry, fillColor color.C
 	ctxt.SetLineWidth(width)
 	// exterior ring
 	ring := geos.Must(g.ExteriorRing())
-	cs, err := ring.CoordSeq()
+	cs, err := ring.coordSeq()
 	if err != nil {
 		log.Fatal(err)
 	}
