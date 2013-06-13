@@ -1,11 +1,18 @@
+.PHONY: fmt check
+
+SRCS = coord.go coordseq.go cwrappers.go geom.go geos.c geos.go geos.h helper.go prepared.go preparedcwrappers.go types.go wkb.go wkt.go
+
 all: build
 
 cwrappers.go: geoscapi.py
 	python3.3 $< /usr/local/include/geos_c.h > $@
 	gofmt -w $@
 
-build: geom.go
+build: $(SRCS)
 	go build
 
-check: geom.go
+check:
 	go test -v
+
+fmt:
+	go fmt
