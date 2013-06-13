@@ -1,6 +1,7 @@
 package geos
 
 import (
+	"bytes"
 	"io/ioutil"
 	"math"
 	"testing"
@@ -948,6 +949,52 @@ func TestRelatePat(t *testing.T) {
 		}
 		if ok != test.relate {
 			t.Errorf("#%d want %v got %v", i, test.relate, ok)
+		}
+	}
+}
+
+func TestFromWKB(t *testing.T) {
+	for i, test := range wkbDecoderTests {
+		g1 := Must(FromWKB(test.wkb))
+		g2 := Must(FromWKT(test.wkt))
+		if !mustEqual(g1.Equals(g2)) {
+			t.Errorf("#%d want %v got %v", i, test.wkt, g1.String())
+		}
+	}
+}
+
+func TestFromHex(t *testing.T) {
+	for i, test := range wkbDecoderHexTests {
+		g1 := Must(FromHex(test.hex))
+		g2 := Must(FromWKT(test.wkt))
+		if !mustEqual(g1.Equals(g2)) {
+			t.Errorf("#%d want %v got %v", i, test.wkt, g1.String())
+		}
+	}
+}
+
+func TestWKB(t *testing.T) {
+	for i, test := range wkbEncoderTests {
+		g := Must(FromWKT(test.wkt))
+		wkb, err := g.WKB()
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if !bytes.Equal(wkb, test.wkb) {
+			t.Errorf("#%d want %v got %v", test.wkb, wkb)
+		}
+	}
+}
+
+func TestHex(t *testing.T) {
+	for i, test := range wkbEncoderHexTests {
+		g := Must(FromWKT(test.wkt))
+		hex, err := g.Hex()
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if !bytes.Equal(hex, test.wkb) {
+			t.Errorf("#%d want %v got %v", string(test.wkb), string(hex))
 		}
 	}
 }

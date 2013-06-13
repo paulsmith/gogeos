@@ -39,6 +39,20 @@ func FromWKT(wkt string) (*Geometry, error) {
 	return decoder.decode(wkt)
 }
 
+// FromWKB is a factory function that returns a new Geometry decoded from a
+// Well-Known Binary (WKB).
+func FromWKB(wkb []byte) (*Geometry, error) {
+	decoder := newWkbDecoder()
+	return decoder.decode(wkb)
+}
+
+// FromHex is a factory function that returns a new Geometry decoded from a
+// Well-Known Binary (WKB) hex string.
+func FromHex(hex string) (*Geometry, error) {
+	decoder := newWkbDecoder()
+	return decoder.decodeHex(hex)
+}
+
 // destroy frees the storage associated with the underlying GEOS C API object.
 func (g *Geometry) destroy() {
 	C.GEOSGeom_destroy_r(handle, g.g)
@@ -60,6 +74,18 @@ func (g *Geometry) String() string {
 		return "" // XXX: better to panic?
 	}
 	return str
+}
+
+// WKB returns the geoemtry encoded as a Well-Known Binary (WKB).
+func (g *Geometry) WKB() ([]byte, error) {
+	encoder := newWkbEncoder()
+	return encoder.encode(g)
+}
+
+// Hex returns the geometry as a Well-Known Binary (WKB) hex-encoded byte slice.
+func (g *Geometry) Hex() ([]byte, error) {
+	encoder := newWkbEncoder()
+	return encoder.encodeHex(g)
 }
 
 // Linearref functions
