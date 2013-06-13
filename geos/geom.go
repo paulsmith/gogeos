@@ -82,6 +82,12 @@ func (g *Geometry) WKB() ([]byte, error) {
 	return encoder.encode(g)
 }
 
+// Hex returns the geometry as a Well-Known Binary (WKB) hex-encoded byte slice.
+func (g *Geometry) Hex() ([]byte, error) {
+	encoder := newWkbEncoder()
+	return encoder.encodeHex(g)
+}
+
 // Linearref functions
 
 // Return distance of point 'p' projected on this geometry from origin.

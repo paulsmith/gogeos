@@ -985,3 +985,16 @@ func TestWKB(t *testing.T) {
 		}
 	}
 }
+
+func TestHex(t *testing.T) {
+	for i, test := range wkbEncoderHexTests {
+		g := Must(FromWKT(test.wkt))
+		hex, err := g.Hex()
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if !bytes.Equal(hex, test.wkb) {
+			t.Errorf("#%d want %v got %v", string(test.wkb), string(hex))
+		}
+	}
+}
