@@ -46,6 +46,13 @@ func FromWKB(wkb []byte) (*Geometry, error) {
 	return decoder.decode(wkb)
 }
 
+// FromHex is a factory function that returns a new Geometry decoded from a
+// Well-Known Binary (WKB) hex string.
+func FromHex(hex string) (*Geometry, error) {
+	decoder := newWkbDecoder()
+	return decoder.decodeHex(hex)
+}
+
 // destroy frees the storage associated with the underlying GEOS C API object.
 func (g *Geometry) destroy() {
 	C.GEOSGeom_destroy_r(handle, g.g)

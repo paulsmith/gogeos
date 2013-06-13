@@ -961,3 +961,13 @@ func TestFromWKB(t *testing.T) {
 		}
 	}
 }
+
+func TestFromHex(t *testing.T) {
+	for i, test := range wkbDecoderHexTests {
+		g1 := Must(FromHex(test.hex))
+		g2 := Must(FromWKT(test.wkt))
+		if !mustEqual(g1.Equals(g2)) {
+			t.Errorf("#%d want %v got %v", i, test.wkt, g1.String())
+		}
+	}
+}
