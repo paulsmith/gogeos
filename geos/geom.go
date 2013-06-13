@@ -76,6 +76,12 @@ func (g *Geometry) String() string {
 	return str
 }
 
+// WKB returns the geoemtry encoded as a Well-Known Binary (WKB).
+func (g *Geometry) WKB() ([]byte, error) {
+	encoder := newWkbEncoder()
+	return encoder.encode(g)
+}
+
 // Linearref functions
 
 // Return distance of point 'p' projected on this geometry from origin.

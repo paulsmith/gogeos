@@ -1,6 +1,7 @@
 package geos
 
 import (
+	"bytes"
 	"io/ioutil"
 	"math"
 	"testing"
@@ -968,6 +969,19 @@ func TestFromHex(t *testing.T) {
 		g2 := Must(FromWKT(test.wkt))
 		if !mustEqual(g1.Equals(g2)) {
 			t.Errorf("#%d want %v got %v", i, test.wkt, g1.String())
+		}
+	}
+}
+
+func TestWKB(t *testing.T) {
+	for i, test := range wkbEncoderTests {
+		g := Must(FromWKT(test.wkt))
+		wkb, err := g.WKB()
+		if err != nil {
+			t.Fatalf("#%d %v", i, err)
+		}
+		if !bytes.Equal(wkb, test.wkb) {
+			t.Errorf("#%d want %v got %v", test.wkb, wkb)
 		}
 	}
 }
