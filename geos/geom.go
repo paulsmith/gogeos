@@ -39,6 +39,13 @@ func FromWKT(wkt string) (*Geometry, error) {
 	return decoder.decode(wkt)
 }
 
+// FromWKB is a factory function that returns a new Geometry decoded from a
+// Well-Known Binary (WKB).
+func FromWKB(wkb []byte) (*Geometry, error) {
+	decoder := newWkbDecoder()
+	return decoder.decode(wkb)
+}
+
 // destroy frees the storage associated with the underlying GEOS C API object.
 func (g *Geometry) destroy() {
 	C.GEOSGeom_destroy_r(handle, g.g)
