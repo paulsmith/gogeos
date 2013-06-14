@@ -166,6 +166,13 @@ func (g *Geometry) BufferWithOpts(width float64, opts BufferOpts) (*Geometry, er
 	return geomFromC("BufferWithOpts", cGEOSBufferWithParams_r(handle, g.g, parms, C.double(width)))
 }
 
+// OffsetCurve computes a new linestring that is offset from the input
+// linestring by the given distance and buffer options.  A negative distance is
+// offset on the right side; positive distance offset on the left side.
+func (g *Geometry) OffsetCurve(distance float64, opts BufferOpts) (*Geometry, error) {
+	return geomFromC("OffsetCurve", cGEOSOffsetCurve_r(handle, g.g, C.double(distance), C.int(opts.QuadSegs), C.int(opts.JoinStyle), C.double(opts.MitreLimit)))
+}
+
 // Geometry Constructors
 
 // NewPoint returns a new geometry of type Point, initialized with the given

@@ -104,6 +104,18 @@ func TestGeometryBufferWithOpts(t *testing.T) {
 	}
 }
 
+func TestOffsetCurve(t *testing.T) {
+	g := Must(FromWKT("LINESTRING (0 10, 5 0, 10 10)"))
+	opts := BufferOpts{QuadSegs: 8, JoinStyle: JoinRound, MitreLimit: 5.0}
+	curve := Must(g.OffsetCurve(1.0, opts))
+	expected := Must(FromWKT(offsetCurve))
+	if !mustEqual(curve.EqualsExact(expected, 0.000001)) {
+		t.Errorf("want %v, got %v", expected, curve)
+	}
+}
+
+const offsetCurve = `LINESTRING (0.8944271909999159 10.4472135954999583, 5.0000000000000000 2.2360679774997907, 9.1055728090000834 10.4472135954999583)`
+
 func reconstructGeom(g *Geometry) *Geometry {
 	typeId, err := g.Type()
 	if err != nil {
