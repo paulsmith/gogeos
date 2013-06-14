@@ -105,8 +105,6 @@ func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 	return geomFromPtr(p), nil
 }
 
-// XXX: buffer w number of segments, endcap, join, mitre limit
-
 // Buffer computes a new geometry as the dilation (position amount) or erosion
 // (negative amount) of the geometry -- a sum or difference, respectively, of
 // the geometry with a circle of radius of the absolute value of the buffer
@@ -114,6 +112,58 @@ func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 	const quadsegs = 8
 	return geomFromC("Buffer", cGEOSBuffer_r(handle, g.g, C.double(d), quadsegs))
+}
+
+type CapStyle int
+
+const (
+	CapRound CapStyle = iota
+	CapFlat
+	CapSquare
+)
+
+type JoinStyle int
+
+const (
+	JoinRound JoinStyle = iota
+	JoinMitre
+	JoinBevel
+)
+
+type BufferOpts struct {
+	QuadSegs    int
+	CapStyle    CapStyle
+	JoinStyle   JoinStyle
+	MitreLimit  float64
+	SingleSided bool
+}
+
+// BufferWithOpts computes a new geometry as the dilation (position amount) or erosion
+// (negative amount) of the geometry -- a sum or difference, respectively, of
+// the geometry with a circle of radius of the absolute value of the buffer
+// amount.
+//
+// BufferWithOpts gives the user more control than Buffer over the parameters of
+// the buffering, including:
+//
+//  - # of quadrant segments (defaults to 8 in Buffer)
+//  - mitre limit (defaults to 5.0 in Buffer)
+//  - end cap style (see CapStyle consts)
+//  - join style (see JoinStyle consts)
+//  - single-sidedness
+func (g *Geometry) BufferWithOpts(width float64, opts BufferOpts) (*Geometry, error) {
+	parms := C.GEOSBufferParams_create_r(handle)
+	defer C.GEOSBufferParams_destroy_r(handle, parms)
+	C.GEOSBufferParams_setEndCapStyle(parms, C.int(opts.CapStyle))
+	C.GEOSBufferParams_setJoinStyle(parms, C.int(opts.JoinStyle))
+	C.GEOSBufferParams_setMitreLimit(parms, C.double(opts.MitreLimit))
+	C.GEOSBufferParams_setQuadrantSegments(parms, C.int(opts.QuadSegs))
+	singleSided := C.int(0)
+	if opts.SingleSided {
+		singleSided = C.int(1)
+	}
+	C.GEOSBufferParams_setSingleSided(parms, singleSided)
+	return geomFromC("BufferWithOpts", cGEOSBufferWithParams_r(handle, g.g, parms, C.double(width)))
 }
 
 // Geometry Constructors
