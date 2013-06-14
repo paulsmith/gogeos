@@ -1,4 +1,15 @@
 CHANGELOG
 
+0.1.1 / 2013-06-14
+* Add BufferWithOpts -- provides user more control over buffering options,
+including # of quadrant segments, end cap & join styles, mitre limit, and
+single-sidedness.
+
+* Add OffsetCurve -- computes a new LineString offset from the input LineString
+by a given distance.
+
+* Add WKB encoding/decoding -- geometries can now be constructed from Well-Known
+Binary (both raw bytes and hex-encoded), and conversely be output as WKB.
+
 0.1.0 / 2013-06-12
 * Initial release
