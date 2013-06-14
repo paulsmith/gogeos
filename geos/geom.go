@@ -105,8 +105,6 @@ func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 	return geomFromPtr(p), nil
 }
 
-// XXX: buffer w number of segments, endcap, join, mitre limit
-
 // Buffer computes a new geometry as the dilation (position amount) or erosion
 // (negative amount) of the geometry -- a sum or difference, respectively, of
 // the geometry with a circle of radius of the absolute value of the buffer
@@ -140,6 +138,19 @@ type BufferOpts struct {
 	SingleSided bool
 }
 
+// BufferWithOpts computes a new geometry as the dilation (position amount) or erosion
+// (negative amount) of the geometry -- a sum or difference, respectively, of
+// the geometry with a circle of radius of the absolute value of the buffer
+// amount.
+//
+// BufferWithOpts gives the user more control than Buffer over the parameters of
+// the buffering, including:
+//
+//  - # of quadrant segments (defaults to 8 in Buffer)
+//  - mitre limit (defaults to 5.0 in Buffer)
+//  - end cap style (see CapStyle consts)
+//  - join style (see JoinStyle consts)
+//  - single-sidedness
 func (g *Geometry) BufferWithOpts(width float64, opts BufferOpts) (*Geometry, error) {
 	parms := C.GEOSBufferParams_create_r(handle)
 	defer C.GEOSBufferParams_destroy_r(handle, parms)
