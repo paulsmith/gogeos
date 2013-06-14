@@ -12,10 +12,10 @@ It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
 
 <h2 id="download">Download</h2>
 
-Current release: **v0.1.0**
+Current release: **v0.1.1** (Friday, June 14, 2013)
 
-<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.0.zip">Download .zip</a>
-<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.0.tar.gz">Download .tar.gz</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.1.zip">Download .zip</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.1.tar.gz">Download .tar.gz</a>
 <a class="pure-button" href="https://github.com/paulsmith/gogeos">View source</a>
 
 <h2 id="quickstart">Quick start</h2>
