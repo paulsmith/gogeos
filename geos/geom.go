@@ -55,7 +55,7 @@ func FromHex(hex string) (*Geometry, error) {
 
 // destroy frees the storage associated with the underlying GEOS C API object.
 func (g *Geometry) destroy() {
-	C.GEOSGeom_destroy_r(handle, g.g)
+	cGEOSGeom_destroy(g.g)
 	g.g = nil
 }
 
@@ -94,13 +94,13 @@ func (g *Geometry) Hex() ([]byte, error) {
 // This must be a lineal geometry.
 func (g *Geometry) Project(p *Geometry) float64 {
 	// XXX: error if wrong geometry types
-	return float64(C.GEOSProject_r(handle, g.g, p.g))
+	return float64(cGEOSProject(g.g, p.g))
 }
 
 // Return closest point to given distance within geometry.
 // This geometry must be a LineString.
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
-	p := C.GEOSInterpolate_r(handle, g.g, C.double(dist))
+	p := cGEOSInterpolate(g.g, C.double(dist))
 	// XXX: test for exception
 	return geomFromPtr(p), nil
 }
@@ -111,7 +111,7 @@ func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 // amount.
 func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 	const quadsegs = 8
-	return geomFromC("Buffer", cGEOSBuffer_r(handle, g.g, C.double(d), quadsegs))
+	return geomFromC("Buffer", cGEOSBuffer(g.g, C.double(d), quadsegs))
 }
 
 type CapStyle int
@@ -152,25 +152,25 @@ type BufferOpts struct {
 //  - join style (see JoinStyle consts)
 //  - single-sidedness
 func (g *Geometry) BufferWithOpts(width float64, opts BufferOpts) (*Geometry, error) {
-	parms := C.GEOSBufferParams_create_r(handle)
-	defer C.GEOSBufferParams_destroy_r(handle, parms)
-	C.GEOSBufferParams_setEndCapStyle(parms, C.int(opts.CapStyle))
-	C.GEOSBufferParams_setJoinStyle(parms, C.int(opts.JoinStyle))
-	C.GEOSBufferParams_setMitreLimit(parms, C.double(opts.MitreLimit))
-	C.GEOSBufferParams_setQuadrantSegments(parms, C.int(opts.QuadSegs))
+	parms := cGEOSBufferParams_create()
+	defer cGEOSBufferParams_destroy(parms)
+	cGEOSBufferParams_setEndCapStyle(parms, C.int(opts.CapStyle))
+	cGEOSBufferParams_setJoinStyle(parms, C.int(opts.JoinStyle))
+	cGEOSBufferParams_setMitreLimit(parms, C.double(opts.MitreLimit))
+	cGEOSBufferParams_setQuadrantSegments(parms, C.int(opts.QuadSegs))
 	singleSided := C.int(0)
 	if opts.SingleSided {
 		singleSided = C.int(1)
 	}
-	C.GEOSBufferParams_setSingleSided(parms, singleSided)
-	return geomFromC("BufferWithOpts", cGEOSBufferWithParams_r(handle, g.g, parms, C.double(width)))
+	cGEOSBufferParams_setSingleSided(parms, singleSided)
+	return geomFromC("BufferWithOpts", cGEOSBufferWithParams(g.g, parms, C.double(width)))
 }
 
 // OffsetCurve computes a new linestring that is offset from the input
 // linestring by the given distance and buffer options.  A negative distance is
 // offset on the right side; positive distance offset on the left side.
 func (g *Geometry) OffsetCurve(distance float64, opts BufferOpts) (*Geometry, error) {
-	return geomFromC("OffsetCurve", cGEOSOffsetCurve_r(handle, g.g, C.double(distance), C.int(opts.QuadSegs), C.int(opts.JoinStyle), C.double(opts.MitreLimit)))
+	return geomFromC("OffsetCurve", cGEOSOffsetCurve(g.g, C.double(distance), C.int(opts.QuadSegs), C.int(opts.JoinStyle), C.double(opts.MitreLimit)))
 }
 
 // Geometry Constructors
@@ -181,13 +181,13 @@ func (g *Geometry) OffsetCurve(distance float64, opts BufferOpts) (*Geometry, er
 // error if more than one coordinate is given.
 func NewPoint(coords ...Coord) (*Geometry, error) {
 	if len(coords) == 0 {
-		return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint_r)
+		return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPoint)
 	}
 	cs, err := coordSeqFromSlice(coords)
 	if err != nil {
 		return nil, err
 	}
-	return geomFromCoordSeq(cs, "NewPoint", cGEOSGeom_createPoint_r)
+	return geomFromCoordSeq(cs, "NewPoint", cGEOSGeom_createPoint)
 }
 
 // NewLinearRing returns a new geometry of type LinearRing, initialized with the
@@ -198,7 +198,7 @@ func NewLinearRing(coords ...Coord) (*Geometry, error) {
 	if err != nil {
 		return nil, err
 	}
-	return geomFromCoordSeq(cs, "NewLinearRing", cGEOSGeom_createLinearRing_r)
+	return geomFromCoordSeq(cs, "NewLinearRing", cGEOSGeom_createLinearRing)
 }
 
 // NewLineString returns a new geometry of type LineString, initialized with the
@@ -209,13 +209,13 @@ func NewLineString(coords ...Coord) (*Geometry, error) {
 	if err != nil {
 		return nil, err
 	}
-	return geomFromCoordSeq(cs, "NewLineString", cGEOSGeom_createLineString_r)
+	return geomFromCoordSeq(cs, "NewLineString", cGEOSGeom_createLineString)
 }
 
 // EmptyPolygon returns a new geometry of type Polygon that's empty (i.e.,
 // IsEmpty() == true).
 func EmptyPolygon() (*Geometry, error) {
-	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPolygon_r)
+	return emptyGeom("EmptyPoint", cGEOSGeom_createEmptyPolygon)
 }
 
 // NewPolygon returns a new geometry of type Polygon, initialized with the given
@@ -254,7 +254,7 @@ func PolygonFromGeom(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 	if len(holeCPtrs) > 0 {
 		ptrHoles = &holeCPtrs[0]
 	}
-	return geomFromC("NewPolygon", cGEOSGeom_createPolygon_r(handle, shell.g, ptrHoles, C.uint(len(holeCPtrs))))
+	return geomFromC("NewPolygon", cGEOSGeom_createPolygon(shell.g, ptrHoles, C.uint(len(holeCPtrs))))
 }
 
 // NewCollection returns a new geometry that is a collection containing multiple
@@ -264,7 +264,7 @@ func PolygonFromGeom(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 // of the given collection type.
 func NewCollection(_type GeometryType, geoms ...*Geometry) (*Geometry, error) {
 	if len(geoms) == 0 {
-		return geomFromC("EmptyCollection", cGEOSGeom_createEmptyCollection_r(handle, C.int(_type)))
+		return geomFromC("EmptyCollection", cGEOSGeom_createEmptyCollection(C.int(_type)))
 	}
 	var ptrGeoms **C.GEOSGeometry
 	// build c array of geom ptrs
@@ -273,71 +273,71 @@ func NewCollection(_type GeometryType, geoms ...*Geometry) (*Geometry, error) {
 		geomCPtrs = append(geomCPtrs, geoms[i].g)
 	}
 	ptrGeoms = &geomCPtrs[0]
-	return geomFromC("NewCollection", cGEOSGeom_createCollection_r(handle, C.int(_type), ptrGeoms, C.uint(len(geomCPtrs))))
+	return geomFromC("NewCollection", cGEOSGeom_createCollection(C.int(_type), ptrGeoms, C.uint(len(geomCPtrs))))
 }
 
 // Clone performs a deep copy on the geometry.
 func (g *Geometry) Clone() (*Geometry, error) {
-	return g.unaryTopo("Clone", cGEOSGeom_clone_r)
+	return g.unaryTopo("Clone", cGEOSGeom_clone)
 }
 
 // Unary topology functions
 
 // Envelope is the bounding box of a geometry, as a polygon.
 func (g *Geometry) Envelope() (*Geometry, error) {
-	return g.unaryTopo("Envelope", cGEOSEnvelope_r)
+	return g.unaryTopo("Envelope", cGEOSEnvelope)
 }
 
 // ConvexHull computes the smallest convex geometry that contains all the points
 // of the geometry.
 func (g *Geometry) ConvexHull() (*Geometry, error) {
-	return g.unaryTopo("ConvexHull", cGEOSConvexHull_r)
+	return g.unaryTopo("ConvexHull", cGEOSConvexHull)
 }
 
 // Boundary is the boundary of the geometry.
 func (g *Geometry) Boundary() (*Geometry, error) {
-	return g.unaryTopo("Boundary", cGEOSBoundary_r)
+	return g.unaryTopo("Boundary", cGEOSBoundary)
 }
 
 // UnaryUnion computes the union of all the constituent geometries of the
 // geometry.
 func (g *Geometry) UnaryUnion() (*Geometry, error) {
-	return g.unaryTopo("UnaryUnion", cGEOSUnaryUnion_r)
+	return g.unaryTopo("UnaryUnion", cGEOSUnaryUnion)
 }
 
 // PointOnSurface computes a point geometry guaranteed to be on the surface of
 // the geometry.
 func (g *Geometry) PointOnSurface() (*Geometry, error) {
-	return g.unaryTopo("PointOnSurface", cGEOSPointOnSurface_r)
+	return g.unaryTopo("PointOnSurface", cGEOSPointOnSurface)
 }
 
 // Centroid is the center point of the geometry.
 func (g *Geometry) Centroid() (*Geometry, error) {
-	return g.unaryTopo("Centroid", cGEOSGetCentroid_r)
+	return g.unaryTopo("Centroid", cGEOSGetCentroid)
 }
 
 // LineMerge will merge together a collection of LineStrings where they touch
 // only at their start and end points. The LineStrings must be fully noded. The
 // resulting geometry is a new collection.
 func (g *Geometry) LineMerge() (*Geometry, error) {
-	return g.unaryTopo("LineMerge", cGEOSLineMerge_r)
+	return g.unaryTopo("LineMerge", cGEOSLineMerge)
 }
 
 // Simplify returns a geometry simplified by amount given by tolerance.
 // May not preserve topology -- see SimplifyP.
 func (g *Geometry) Simplify(tolerance float64) (*Geometry, error) {
-	return g.simplify("simplify", cGEOSSimplify_r, tolerance)
+	return g.simplify("simplify", cGEOSSimplify, tolerance)
 }
 
 // SimplifyP returns a geometry simplified by amount given by tolerance.
 // Unlike Simplify, SimplifyP guarantees it will preserve topology.
 func (g *Geometry) SimplifyP(tolerance float64) (*Geometry, error) {
-	return g.simplify("simplify", cGEOSTopologyPreserveSimplify_r, tolerance)
+	return g.simplify("simplify", cGEOSTopologyPreserveSimplify, tolerance)
 }
 
 // UniquePoints return all distinct vertices of input geometry as a MultiPoint.
 func (g *Geometry) UniquePoints() (*Geometry, error) {
-	return g.unaryTopo("UniquePoints", cGEOSGeom_extractUniquePoints_r)
+	return g.unaryTopo("UniquePoints", cGEOSGeom_extractUniquePoints)
 }
 
 // SharedPaths finds paths shared between the two given lineal geometries.
@@ -345,13 +345,13 @@ func (g *Geometry) UniquePoints() (*Geometry, error) {
 //	- first element is a MultiLineString containing shared paths having the _same_ direction on both inputs
 //	- second element is a MultiLineString containing shared paths having the _opposite_ direction on the two inputs
 func (g *Geometry) SharedPaths(other *Geometry) (*Geometry, error) {
-	return g.binaryTopo("SharedPaths", cGEOSSharedPaths_r, other)
+	return g.binaryTopo("SharedPaths", cGEOSSharedPaths, other)
 }
 
 // Snap returns a new geometry where the geometry is snapped to the given
 // geometry by given tolerance.
 func (g *Geometry) Snap(other *Geometry, tolerance float64) (*Geometry, error) {
-	return geomFromC("Snap", cGEOSSnap_r(handle, g.g, other.g, C.double(tolerance)))
+	return geomFromC("Snap", cGEOSSnap(g.g, other.g, C.double(tolerance)))
 }
 
 // Prepared returns a new prepared geometry from the geometry -- see PGeometry
@@ -364,94 +364,94 @@ func (g *Geometry) Prepare() *PGeometry {
 // Intersection returns a new geometry representing the points shared by this
 // geometry and the other.
 func (g *Geometry) Intersection(other *Geometry) (*Geometry, error) {
-	return g.binaryTopo("Intersection", cGEOSIntersection_r, other)
+	return g.binaryTopo("Intersection", cGEOSIntersection, other)
 }
 
 // Difference returns a new geometry representing the points making up this
 // geometry that do not make up the other.
 func (g *Geometry) Difference(other *Geometry) (*Geometry, error) {
-	return g.binaryTopo("Difference", cGEOSDifference_r, other)
+	return g.binaryTopo("Difference", cGEOSDifference, other)
 }
 
 // SymDifference returns a new geometry representing the set combining the
 // points in this geometry not in the other, and the points in the other
 // geometry and not in this.
 func (g *Geometry) SymDifference(other *Geometry) (*Geometry, error) {
-	return g.binaryTopo("SymDifference", cGEOSSymDifference_r, other)
+	return g.binaryTopo("SymDifference", cGEOSSymDifference, other)
 }
 
 // Union returns a new geometry representing all points in this geometry and the
 // other.
 func (g *Geometry) Union(other *Geometry) (*Geometry, error) {
-	return g.binaryTopo("Union", cGEOSUnion_r, other)
+	return g.binaryTopo("Union", cGEOSUnion, other)
 }
 
 // Binary predicate functions
 
 // Disjoint returns true if the two geometries have no point in common.
 func (g *Geometry) Disjoint(other *Geometry) (bool, error) {
-	return g.binaryPred("Disjoint", cGEOSDisjoint_r, other)
+	return g.binaryPred("Disjoint", cGEOSDisjoint, other)
 }
 
 // Touches returns true if the two geometries have at least one point in common,
 // but their interiors do not intersect.
 func (g *Geometry) Touches(other *Geometry) (bool, error) {
-	return g.binaryPred("Touches", cGEOSTouches_r, other)
+	return g.binaryPred("Touches", cGEOSTouches, other)
 }
 
 // Intersects returns true if the two geometries have at least one point in
 // common.
 func (g *Geometry) Intersects(other *Geometry) (bool, error) {
-	return g.binaryPred("Intersects", cGEOSIntersects_r, other)
+	return g.binaryPred("Intersects", cGEOSIntersects, other)
 }
 
 // Crosses returns true if the two geometries have some but not all interior
 // points in common.
 func (g *Geometry) Crosses(other *Geometry) (bool, error) {
-	return g.binaryPred("Crosses", cGEOSCrosses_r, other)
+	return g.binaryPred("Crosses", cGEOSCrosses, other)
 }
 
 // Within returns true if every point of this geometry is a point of the other,
 // and the interiors of the two geometries have at least one point in common.
 func (g *Geometry) Within(other *Geometry) (bool, error) {
-	return g.binaryPred("Within", cGEOSWithin_r, other)
+	return g.binaryPred("Within", cGEOSWithin, other)
 }
 
 // Contains returns true if every point of the other is a point of this geometry,
 // and the interiors of the two geometries have at least one point in common.
 func (g *Geometry) Contains(other *Geometry) (bool, error) {
-	return g.binaryPred("Contains", cGEOSContains_r, other)
+	return g.binaryPred("Contains", cGEOSContains, other)
 }
 
 // Overlaps returns true if the geometries have some but not all points in
 // common, they have the same dimension, and the intersection of the interiors
 // of the two geometries has the same dimension as the geometries themselves.
 func (g *Geometry) Overlaps(other *Geometry) (bool, error) {
-	return g.binaryPred("Overlaps", cGEOSOverlaps_r, other)
+	return g.binaryPred("Overlaps", cGEOSOverlaps, other)
 }
 
 // Equals returns true if the two geometries have at least one point in common,
 // and no point of either geometry lies in the exterior of the other geometry.
 func (g *Geometry) Equals(other *Geometry) (bool, error) {
-	return g.binaryPred("Equals", cGEOSEquals_r, other)
+	return g.binaryPred("Equals", cGEOSEquals, other)
 }
 
 // Covers returns true if every point of the other geometry is a point of this
 // geometry.
 func (g *Geometry) Covers(other *Geometry) (bool, error) {
-	return g.binaryPred("Covers", cGEOSCovers_r, other)
+	return g.binaryPred("Covers", cGEOSCovers, other)
 }
 
 // CoveredBy returns true if every point of this geometry is a point of the
 // other geometry.
 func (g *Geometry) CoveredBy(other *Geometry) (bool, error) {
-	return g.binaryPred("CoveredBy", cGEOSCoveredBy_r, other)
+	return g.binaryPred("CoveredBy", cGEOSCoveredBy, other)
 }
 
 // EqualsExact returns true if both geometries are Equal, as evaluated by their
 // points being within the given tolerance.
 func (g *Geometry) EqualsExact(other *Geometry, tolerance float64) (bool, error) {
-	return boolFromC("EqualsExact", cGEOSEqualsExact_r(handle, g.g, other.g, C.double(tolerance)))
+	return boolFromC("EqualsExact", cGEOSEqualsExact(g.g, other.g, C.double(tolerance)))
 }
 
 // Unary predicate functions
@@ -459,35 +459,35 @@ func (g *Geometry) EqualsExact(other *Geometry, tolerance float64) (bool, error)
 // IsEmpty returns true if the set of points of this geometry is empty (i.e.,
 // the empty geometry).
 func (g *Geometry) IsEmpty() (bool, error) {
-	return g.unaryPred("IsEmpty", cGEOSisEmpty_r)
+	return g.unaryPred("IsEmpty", cGEOSisEmpty)
 }
 
 // IsSimple returns true iff the only self-intersections are at boundary points.
 func (g *Geometry) IsSimple() (bool, error) {
-	return g.unaryPred("IsSimple", cGEOSisSimple_r)
+	return g.unaryPred("IsSimple", cGEOSisSimple)
 }
 
 // IsRing returns true if the lineal geometry has the ring property.
 func (g *Geometry) IsRing() (bool, error) {
-	return g.unaryPred("IsRing", cGEOSisRing_r)
+	return g.unaryPred("IsRing", cGEOSisRing)
 }
 
 // HasZ returns true if the geometry is 3D.
 func (g *Geometry) HasZ() (bool, error) {
-	return g.unaryPred("HasZ", cGEOSHasZ_r)
+	return g.unaryPred("HasZ", cGEOSHasZ)
 }
 
 // IsClosed returns true if the geometry is closed (i.e., start & end points
 // equal).
 func (g *Geometry) IsClosed() (bool, error) {
-	return g.unaryPred("IsClosed", cGEOSisClosed_r)
+	return g.unaryPred("IsClosed", cGEOSisClosed)
 }
 
 // Geometry info functions
 
 // Type returns the SFS type of the geometry.
 func (g *Geometry) Type() (GeometryType, error) {
-	i := C.GEOSGeomTypeId_r(handle, g.g)
+	i := cGEOSGeomTypeId(g.g)
 	if i == -1 {
 		// XXX: error
 		return -1, Error()
@@ -497,64 +497,64 @@ func (g *Geometry) Type() (GeometryType, error) {
 
 // SRID returns the geometry's SRID, if set.
 func (g *Geometry) SRID() (int, error) {
-	return intFromC("SRID", C.GEOSGetSRID_r(handle, g.g), 0)
+	return intFromC("SRID", cGEOSGetSRID(g.g), 0)
 }
 
 // SetSRID sets the geometry's SRID.
 func (g *Geometry) SetSRID(srid int) {
-	C.GEOSSetSRID_r(handle, g.g, C.int(srid))
+	cGEOSSetSRID(g.g, C.int(srid))
 }
 
 // NGeometry returns the number of component geometries (eg., for
 // a collection).
 func (g *Geometry) NGeometry() (int, error) {
-	return intFromC("NGeometry", cGEOSGetNumGeometries_r(handle, g.g), -1)
+	return intFromC("NGeometry", cGEOSGetNumGeometries(g.g), -1)
 }
 
 // XXX: method to return a slice of geometries
 
 // Geometry returns the nth sub-geometry of the geometry (eg., of a collection).
 func (g *Geometry) Geometry(n int) (*Geometry, error) {
-	return geomFromC("Geometry", cGEOSGetGeometryN_r(handle, g.g, C.int(n)))
+	return geomFromC("Geometry", cGEOSGetGeometryN(g.g, C.int(n)))
 }
 
 // Normalize computes the normal form of the geometry.
 // Modifies geometry in-place, clone first if this is not wanted/safe.
 func (g *Geometry) Normalize() error {
-	_, err := intFromC("Normalize", cGEOSNormalize_r(handle, g.g), -1)
+	_, err := intFromC("Normalize", cGEOSNormalize(g.g), -1)
 	return err
 }
 
 // NPoint returns the number of points in the geometry.
 func (g *Geometry) NPoint() (int, error) {
-	return intFromC("NPoint", cGEOSGeomGetNumPoints_r(handle, g.g), -1)
+	return intFromC("NPoint", cGEOSGeomGetNumPoints(g.g), -1)
 }
 
-type float64Getter func(C.GEOSContextHandle_t, *C.GEOSGeometry, *C.double) C.int
+type float64Getter func(*C.GEOSGeometry, *C.double) C.int
 
 // X returns the x ordinate of the geometry.
 // Geometry must be a Point.
 func (g *Geometry) X() (float64, error) {
-	return g.float64FromC("X", cGEOSGeomGetX_r, -1)
+	return g.float64FromC("X", cGEOSGeomGetX, -1)
 }
 
 // Y returns the y ordinate of the geometry.
 // Geometry must be a Point
 func (g *Geometry) Y() (float64, error) {
-	return g.float64FromC("Y", cGEOSGeomGetY_r, -1)
+	return g.float64FromC("Y", cGEOSGeomGetY, -1)
 }
 
 // Holes returns a slice of geometries (LinearRings) representing the interior
 // rings of a polygon (possibly nil).
 // Geometry must be a Polygon.
 func (g *Geometry) Holes() ([]*Geometry, error) {
-	n, err := intFromC("NInteriorRing", cGEOSGetNumInteriorRings_r(handle, g.g), -1)
+	n, err := intFromC("NInteriorRing", cGEOSGetNumInteriorRings(g.g), -1)
 	if err != nil {
 		return nil, err
 	}
 	holes := make([]*Geometry, n)
 	for i := 0; i < n; i++ {
-		ring, err := geomFromC("InteriorRing", cGEOSGetInteriorRingN_r(handle, g.g, C.int(i)))
+		ring, err := geomFromC("InteriorRing", cGEOSGetInteriorRingN(g.g, C.int(i)))
 		if err != nil {
 			return nil, err
 		}
@@ -568,17 +568,17 @@ func (g *Geometry) Holes() ([]*Geometry, error) {
 // Shell returns the exterior ring (a LinearRing) of the geometry.
 // Geometry must be a Polygon.
 func (g *Geometry) Shell() (*Geometry, error) {
-	return geomFromC("ExteriorRing", cGEOSGetExteriorRing_r(handle, g.g))
+	return geomFromC("ExteriorRing", cGEOSGetExteriorRing(g.g))
 }
 
 // NCoordinate returns the number of coordinates of the geometry.
 func (g *Geometry) NCoordinate() (int, error) {
-	return intFromC("NCoordinate", cGEOSGetNumCoordinates_r(handle, g.g), -1)
+	return intFromC("NCoordinate", cGEOSGetNumCoordinates(g.g), -1)
 }
 
 // Geometry must be a LineString, LinearRing, or Point.
 func (g *Geometry) coordSeq() (*coordSeq, error) {
-	c := C.GEOSGeom_getCoordSeq_r(handle, g.g)
+	c := cGEOSGeom_getCoordSeq(g.g)
 	if c == nil {
 		return nil, Error()
 	}
@@ -588,7 +588,7 @@ func (g *Geometry) coordSeq() (*coordSeq, error) {
 // Coords returns a slice of Coord, a sequence of coordinates underlying the
 // point, linestring, or linear ring.
 func (g *Geometry) Coords() ([]Coord, error) {
-	c := C.GEOSGeom_getCoordSeq_r(handle, g.g)
+	c := cGEOSGeom_getCoordSeq(g.g)
 	if c == nil {
 		return nil, Error()
 	}
@@ -599,31 +599,31 @@ func (g *Geometry) Coords() ([]Coord, error) {
 // Dimension returns the number of dimensions geometry, eg., 1 for point, 2 for
 // linestring.
 func (g *Geometry) Dimension() int {
-	return int(cGEOSGeom_getDimensions_r(handle, g.g))
+	return int(cGEOSGeom_getDimensions(g.g))
 }
 
 // CoordDimension returns the number of dimensions of the coordinates of the
 // geometry (2 or 3).
 func (g *Geometry) CoordDimension() int {
-	return int(C.GEOSGeom_getCoordinateDimension_r(handle, g.g))
+	return int(cGEOSGeom_getCoordinateDimension(g.g))
 }
 
 // Point returns the nth point of the geometry.
 // Geometry must be LineString.
 func (g *Geometry) Point(n int) (*Geometry, error) {
-	return geomFromC("Point", cGEOSGeomGetPointN_r(handle, g.g, C.int(n)))
+	return geomFromC("Point", cGEOSGeomGetPointN(g.g, C.int(n)))
 }
 
 // StartPoint returns the 0th point of the geometry.
 // Geometry must be LineString.
 func (g *Geometry) StartPoint() (*Geometry, error) {
-	return geomFromC("StartPoint", cGEOSGeomGetStartPoint_r(handle, g.g))
+	return geomFromC("StartPoint", cGEOSGeomGetStartPoint(g.g))
 }
 
 // EndPoint returns the (n-1)th point of the geometry.
 // Geometry must be LineString.
 func (g *Geometry) EndPoint() (*Geometry, error) {
-	return geomFromC("EndPoint", C.GEOSGeomGetEndPoint_r(handle, g.g))
+	return geomFromC("EndPoint", cGEOSGeomGetEndPoint(g.g))
 }
 
 // Misc functions
@@ -631,30 +631,30 @@ func (g *Geometry) EndPoint() (*Geometry, error) {
 // Area returns the area of the geometry, which must be a areal geometry like
 // a polygon or multipolygon.
 func (g *Geometry) Area() (float64, error) {
-	return g.float64FromC("Area", cGEOSArea_r, 0)
+	return g.float64FromC("Area", cGEOSArea, 0)
 }
 
 // Length returns the length of the geometry, which must be a lineal geometry
 // like a linestring or linear ring.
 func (g *Geometry) Length() (float64, error) {
-	return g.float64FromC("Length", cGEOSLength_r, 0)
+	return g.float64FromC("Length", cGEOSLength, 0)
 }
 
 // Distance returns the Cartesian distance between the two geometries.
 func (g *Geometry) Distance(other *Geometry) (float64, error) {
-	return g.binaryFloat("Distance", cGEOSDistance_r, other)
+	return g.binaryFloat("Distance", cGEOSDistance, other)
 }
 
 // HausdorffDistance returns the maximum distance of the geometry to the nearest
 // point in the other geometry (i.e., considers the whole shape and position of
 // the geometries).
 func (g *Geometry) HausdorffDistance(other *Geometry) (float64, error) {
-	return g.binaryFloat("HausdorffDistance", cGEOSHausdorffDistance_r, other)
+	return g.binaryFloat("HausdorffDistance", cGEOSHausdorffDistance, other)
 }
 
 func (g *Geometry) HausdorffDistanceDensify(other *Geometry, densifyFrac float64) (float64, error) {
 	var d C.double
-	return float64FromC("HausdorffDistanceDensify", cGEOSHausdorffDistanceDensify_r(handle, g.g, other.g, C.double(densifyFrac), &d), d)
+	return float64FromC("HausdorffDistanceDensify", cGEOSHausdorffDistanceDensify(g.g, other.g, C.double(densifyFrac), &d), d)
 }
 
 // DE-9IM
@@ -663,12 +663,12 @@ func (g *Geometry) HausdorffDistanceDensify(other *Geometry, densifyFrac float64
 // Nine-Intersection Model (DE-9IM) matrix) for the spatial relationship between
 // the two geometries.
 func (g *Geometry) Relate(other *Geometry) (string, error) {
-	cs := cGEOSRelate_r(handle, g.g, other.g)
+	cs := cGEOSRelate(g.g, other.g)
 	if cs == nil {
 		return "", Error()
 	}
 	s := C.GoString(cs)
-	C.GEOSFree_r(handle, unsafe.Pointer(cs))
+	//cGEOSFree(unsafe.Pointer(cs))
 	return s, nil
 }
 
@@ -677,39 +677,39 @@ func (g *Geometry) Relate(other *Geometry) (string, error) {
 func (g *Geometry) RelatePat(other *Geometry, pat string) (bool, error) {
 	cs := C.CString(pat)
 	defer C.free(unsafe.Pointer(cs))
-	return boolFromC("RelatePat", cGEOSRelatePattern_r(handle, g.g, other.g, cs))
+	return boolFromC("RelatePat", cGEOSRelatePattern(g.g, other.g, cs))
 }
 
 // various wrappers around C API
 
-type unaryTopo func(C.GEOSContextHandle_t, *C.GEOSGeometry) *C.GEOSGeometry
-type unaryPred func(C.GEOSContextHandle_t, *C.GEOSGeometry) C.char
+type unaryTopo func(*C.GEOSGeometry) *C.GEOSGeometry
+type unaryPred func(*C.GEOSGeometry) C.char
 
 func (g *Geometry) unaryTopo(name string, cfn unaryTopo) (*Geometry, error) {
-	return geomFromC(name, cfn(handle, g.g))
+	return geomFromC(name, cfn(g.g))
 }
 
 func (g *Geometry) unaryPred(name string, cfn unaryPred) (bool, error) {
-	return boolFromC(name, cfn(handle, g.g))
+	return boolFromC(name, cfn(g.g))
 }
 
-type binaryTopo func(C.GEOSContextHandle_t, *C.GEOSGeometry, *C.GEOSGeometry) *C.GEOSGeometry
-type binaryPred func(C.GEOSContextHandle_t, *C.GEOSGeometry, *C.GEOSGeometry) C.char
+type binaryTopo func(*C.GEOSGeometry, *C.GEOSGeometry) *C.GEOSGeometry
+type binaryPred func(*C.GEOSGeometry, *C.GEOSGeometry) C.char
 
 func (g *Geometry) binaryTopo(name string, cfn binaryTopo, other *Geometry) (*Geometry, error) {
-	return geomFromC(name, cfn(handle, g.g, other.g))
+	return geomFromC(name, cfn(g.g, other.g))
 }
 
 func (g *Geometry) binaryPred(name string, cfn binaryPred, other *Geometry) (bool, error) {
-	return boolFromC(name, cfn(handle, g.g, other.g))
+	return boolFromC(name, cfn(g.g, other.g))
 }
 
-func geomFromCoordSeq(cs *coordSeq, name string, cfn func(C.GEOSContextHandle_t, *C.GEOSCoordSequence) *C.GEOSGeometry) (*Geometry, error) {
-	return geomFromC(name, cfn(handle, cs.c))
+func geomFromCoordSeq(cs *coordSeq, name string, cfn func(*C.GEOSCoordSequence) *C.GEOSGeometry) (*Geometry, error) {
+	return geomFromC(name, cfn(cs.c))
 }
 
-func emptyGeom(name string, cfn func(C.GEOSContextHandle_t) *C.GEOSGeometry) (*Geometry, error) {
-	return geomFromC(name, cfn(handle))
+func emptyGeom(name string, cfn func() *C.GEOSGeometry) (*Geometry, error) {
+	return geomFromC(name, cfn())
 }
 
 func geomFromC(name string, ptr *C.GEOSGeometry) (*Geometry, error) {
@@ -735,7 +735,7 @@ func intFromC(name string, i C.int, exception C.int) (int, error) {
 
 func (g *Geometry) float64FromC(name string, cfn float64Getter, exception C.int) (float64, error) {
 	var d C.double
-	i := cfn(handle, g.g, &d)
+	i := cfn(g.g, &d)
 	if i == exception {
 		return 0.0, Error()
 	}
@@ -749,13 +749,13 @@ func float64FromC(name string, rv C.int, d C.double) (float64, error) {
 	return float64(d), nil
 }
 
-type binaryFloatGetter func(C.GEOSContextHandle_t, *C.GEOSGeometry, *C.GEOSGeometry, *C.double) C.int
+type binaryFloatGetter func(*C.GEOSGeometry, *C.GEOSGeometry, *C.double) C.int
 
 func (g *Geometry) binaryFloat(name string, cfn binaryFloatGetter, other *Geometry) (float64, error) {
 	var d C.double
-	return float64FromC(name, cfn(handle, g.g, other.g, &d), d)
+	return float64FromC(name, cfn(g.g, other.g, &d), d)
 }
 
-func (g *Geometry) simplify(name string, cfn func(C.GEOSContextHandle_t, *C.GEOSGeometry, C.double) *C.GEOSGeometry, d float64) (*Geometry, error) {
-	return geomFromC(name, cfn(handle, g.g, C.double(d)))
+func (g *Geometry) simplify(name string, cfn func(*C.GEOSGeometry, C.double) *C.GEOSGeometry, d float64) (*Geometry, error) {
+	return geomFromC(name, cfn(g.g, C.double(d)))
 }

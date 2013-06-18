@@ -127,16 +127,28 @@ import (
             gosig += " $result"
         gosig += " {"
         t = Template(gosig)
-        params = ", ".join([goident(p, inbody=False) + " " + gotype(p.type) for p in func.args])
+        params = ", ".join([goident(p, inbody=False) + " " + gotype(p.type) for p in func.args if p.type.name != 'GEOSContextHandle_t'])
         result = gotype(func.type)
-        print(t.substitute(name="c" + func.name, parameters=params, result=result))
+        func_name = "c" + func.name
+        if func_name.endswith('_r'):
+            func_name = func_name[:-2]
+        print(t.substitute(name=func_name, parameters=params, result=result))
 
         # Go function body
-        gobody = "\t${return_stmt}C.$name($args)\n}\n"
+        gobody = """\
+\t${return_stmt}C.$name($args)
+}
+"""
+        if func.name.endswith("_r") and func.name != "initGEOS_r":
+            gobody = """\
+\t${handle_lock}.Lock()
+\tdefer ${handle_lock}.Unlock()
+""" + gobody
+
         t = Template(gobody)
         args = ", ".join([goident(p) for p in func.args])
         return_stmt = 'return ' if func.type.name != 'void' else ''
-        print(t.substitute(return_stmt=return_stmt, name=func.name, args=args))
+        print(t.substitute(return_stmt=return_stmt, name=func.name, args=args, handle_lock='handlemu'))
 
 if __name__ == "__main__":
     cgo_func_wrappers(sys.argv[1])
