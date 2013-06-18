@@ -131,11 +131,10 @@ const (
 )
 
 type BufferOpts struct {
-	QuadSegs    int
-	CapStyle    CapStyle
-	JoinStyle   JoinStyle
-	MitreLimit  float64
-	SingleSided bool
+	QuadSegs   int
+	CapStyle   CapStyle
+	JoinStyle  JoinStyle
+	MitreLimit float64
 }
 
 // BufferWithOpts computes a new geometry as the dilation (position amount) or erosion
@@ -150,20 +149,8 @@ type BufferOpts struct {
 //  - mitre limit (defaults to 5.0 in Buffer)
 //  - end cap style (see CapStyle consts)
 //  - join style (see JoinStyle consts)
-//  - single-sidedness
 func (g *Geometry) BufferWithOpts(width float64, opts BufferOpts) (*Geometry, error) {
-	parms := cGEOSBufferParams_create()
-	defer cGEOSBufferParams_destroy(parms)
-	cGEOSBufferParams_setEndCapStyle(parms, C.int(opts.CapStyle))
-	cGEOSBufferParams_setJoinStyle(parms, C.int(opts.JoinStyle))
-	cGEOSBufferParams_setMitreLimit(parms, C.double(opts.MitreLimit))
-	cGEOSBufferParams_setQuadrantSegments(parms, C.int(opts.QuadSegs))
-	singleSided := C.int(0)
-	if opts.SingleSided {
-		singleSided = C.int(1)
-	}
-	cGEOSBufferParams_setSingleSided(parms, singleSided)
-	return geomFromC("BufferWithOpts", cGEOSBufferWithParams(g.g, parms, C.double(width)))
+	return geomFromC("BufferWithOpts", cGEOSBufferWithStyle(g.g, C.double(width), C.int(opts.QuadSegs), C.int(opts.CapStyle), C.int(opts.JoinStyle), C.double(opts.MitreLimit)))
 }
 
 // OffsetCurve computes a new linestring that is offset from the input

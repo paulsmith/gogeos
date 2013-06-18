@@ -96,7 +96,7 @@ const bufferPoly = `POLYGON ((1.0000000000000000 0.0000000000000000, 0.980785280
 
 func TestGeometryBufferWithOpts(t *testing.T) {
 	g := Must(FromWKT("POINT (0 0)"))
-	opts := BufferOpts{QuadSegs: 8, CapStyle: CapRound, JoinStyle: JoinRound, MitreLimit: 5.0, SingleSided: false}
+	opts := BufferOpts{QuadSegs: 8, CapStyle: CapRound, JoinStyle: JoinRound, MitreLimit: 5.0}
 	b := Must(g.BufferWithOpts(1.0, opts))
 	expected := Must(FromWKT(bufferPoly))
 	if !mustEqual(b.EqualsExact(expected, 0.000001)) {
