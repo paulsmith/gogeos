@@ -131,10 +131,15 @@ const (
 )
 
 type BufferOpts struct {
+	// Number of quadrant segments
 	QuadSegs    int
+	// End cap style
 	CapStyle    CapStyle
+	// Join style
 	JoinStyle   JoinStyle
+	// Mitre limit
 	MitreLimit  float64
+	// If buffer should be single-sided
 	SingleSided bool
 }
 
