@@ -117,7 +117,8 @@ func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 type CapStyle int
 
 const (
-	CapRound CapStyle = iota
+	_ CapStyle = iota
+	CapRound
 	CapFlat
 	CapSquare
 )
@@ -125,7 +126,8 @@ const (
 type JoinStyle int
 
 const (
-	JoinRound JoinStyle = iota
+	_ JoinStyle = iota
+	JoinRound
 	JoinMitre
 	JoinBevel
 )
