@@ -11,16 +11,21 @@ import "C"
 
 import (
 	"fmt"
+	"sync"
 )
 
-// Required for the thread-safe GEOS C API (the "*_r" functions)
-var handle = C.gogeos_initGEOS()
+var (
+	// Required for the thread-safe GEOS C API (the "*_r" functions)
+	handle = C.gogeos_initGEOS()
+	// Protects the handle from being used concurrently in multiple C threads
+	handlemu sync.Mutex
+)
 
 // XXX: store last error message from handler in a global var (chan?)
 
 // Version returns the version of the GEOS C API in use
 func Version() string {
-	return C.GoString(C.GEOSversion())
+	return C.GoString(cGEOSversion())
 }
 
 // Error gets the last error that occured in the GEOS C API as a Go error type

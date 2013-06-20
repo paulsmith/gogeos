@@ -14,22 +14,28 @@ type coordSeq struct {
 }
 
 func newCoordSeq(size, dims int) *coordSeq {
-	p := C.GEOSCoordSeq_create_r(handle, C.uint(size), C.uint(dims))
+	p := cGEOSCoordSeq_create(C.uint(size), C.uint(dims))
 	if p == nil {
 		return nil
 	}
 	return coordSeqFromPtr(p)
 }
 
-func coordSeqFromPtr(c *C.GEOSCoordSequence) *coordSeq {
-	cs := &coordSeq{c}
-	runtime.SetFinalizer(cs, (*coordSeq).destroy)
+func coordSeqFromPtr(ptr *C.GEOSCoordSequence) *coordSeq {
+	cs := &coordSeq{c: ptr}
+	runtime.SetFinalizer(cs, func(*coordSeq) {
+		cGEOSCoordSeq_destroy(ptr)
+	})
 	return cs
 }
 
 func coordSeqFromSlice(coords []Coord) (*coordSeq, error) {
 	// XXX: handle 3-dim
-	cs := newCoordSeq(len(coords), 2)
+	ptr := cGEOSCoordSeq_create(C.uint(len(coords)), C.uint(2))
+	if ptr == nil {
+		return nil, Error()
+	}
+	cs := &coordSeq{c: ptr}
 	for i, c := range coords {
 		if err := cs.setX(i, c.X); err != nil {
 			return nil, err
@@ -42,7 +48,7 @@ func coordSeqFromSlice(coords []Coord) (*coordSeq, error) {
 }
 
 func (c *coordSeq) Clone() (*coordSeq, error) {
-	p := C.GEOSCoordSeq_clone_r(handle, c.c)
+	p := cGEOSCoordSeq_clone(c.c)
 	if p == nil {
 		return nil, Error()
 	}
@@ -50,7 +56,7 @@ func (c *coordSeq) Clone() (*coordSeq, error) {
 }
 
 func (c *coordSeq) setX(idx int, val float64) error {
-	i := C.GEOSCoordSeq_setX_r(handle, c.c, C.uint(idx), C.double(val))
+	i := cGEOSCoordSeq_setX(c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
 	}
@@ -58,7 +64,7 @@ func (c *coordSeq) setX(idx int, val float64) error {
 }
 
 func (c *coordSeq) setY(idx int, val float64) error {
-	i := C.GEOSCoordSeq_setY_r(handle, c.c, C.uint(idx), C.double(val))
+	i := cGEOSCoordSeq_setY(c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
 	}
@@ -66,7 +72,7 @@ func (c *coordSeq) setY(idx int, val float64) error {
 }
 
 func (c *coordSeq) setZ(idx int, val float64) error {
-	i := C.GEOSCoordSeq_setZ_r(handle, c.c, C.uint(idx), C.double(val))
+	i := cGEOSCoordSeq_setZ(c.c, C.uint(idx), C.double(val))
 	if i == 0 {
 		return Error()
 	}
@@ -75,7 +81,7 @@ func (c *coordSeq) setZ(idx int, val float64) error {
 
 func (c *coordSeq) x(idx int) (float64, error) {
 	var val C.double
-	i := C.GEOSCoordSeq_getX_r(handle, c.c, C.uint(idx), &val)
+	i := cGEOSCoordSeq_getX(c.c, C.uint(idx), &val)
 	if i == 0 {
 		return 0.0, Error()
 	}
@@ -84,7 +90,7 @@ func (c *coordSeq) x(idx int) (float64, error) {
 
 func (c *coordSeq) y(idx int) (float64, error) {
 	var val C.double
-	i := C.GEOSCoordSeq_getY_r(handle, c.c, C.uint(idx), &val)
+	i := cGEOSCoordSeq_getY(c.c, C.uint(idx), &val)
 	if i == 0 {
 		return 0.0, Error()
 	}
@@ -93,7 +99,7 @@ func (c *coordSeq) y(idx int) (float64, error) {
 
 func (c *coordSeq) z(idx int) (float64, error) {
 	var val C.double
-	i := C.GEOSCoordSeq_getZ_r(handle, c.c, C.uint(idx), &val)
+	i := cGEOSCoordSeq_getZ(c.c, C.uint(idx), &val)
 	if i == 0 {
 		return 0.0, Error()
 	}
@@ -102,7 +108,7 @@ func (c *coordSeq) z(idx int) (float64, error) {
 
 func (c *coordSeq) size() (int, error) {
 	var val C.uint
-	i := C.GEOSCoordSeq_getSize_r(handle, c.c, &val)
+	i := cGEOSCoordSeq_getSize(c.c, &val)
 	if i == 0 {
 		return 0, Error()
 	}
@@ -111,15 +117,9 @@ func (c *coordSeq) size() (int, error) {
 
 func (c *coordSeq) dims() (int, error) {
 	var val C.uint
-	i := C.GEOSCoordSeq_getDimensions_r(handle, c.c, &val)
+	i := cGEOSCoordSeq_getDimensions(c.c, &val)
 	if i == 0 {
 		return 0, Error()
 	}
 	return int(val), nil
-}
-
-func (c *coordSeq) destroy() {
-	// XXX: mutex
-	C.GEOSCoordSeq_destroy_r(handle, c.c)
-	c.c = nil
 }
