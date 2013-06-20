@@ -26,10 +26,27 @@ type Geometry struct {
 
 // geomFromPtr returns a new Geometry that's been initialized with a C pointer
 // to the GEOS C API object.
-func geomFromPtr(p *C.GEOSGeometry) *Geometry {
-	g := &Geometry{p}
-	runtime.SetFinalizer(g, (*Geometry).destroy)
+//
+// This constructor should be used when the caller has ownership of the
+// underlying C object.
+func geomFromPtr(ptr *C.GEOSGeometry) *Geometry {
+	g := &Geometry{g: ptr}
+	runtime.SetFinalizer(g, func(g *Geometry) {
+		cGEOSGeom_destroy(ptr)
+	})
 	return g
+}
+
+// geomFromPtrUnowned returns a new Geometry that's been initialized with
+// a C pointer to the GEOS C API object.
+//
+// This constructor should be used when the caller doesn't have ownership of the
+// underlying C object.
+func geomFromPtrUnowned(ptr *C.GEOSGeometry) (*Geometry, error) {
+	if ptr == nil {
+		return nil, Error()
+	}
+	return &Geometry{g: ptr}, nil
 }
 
 // FromWKT is a factory function that returns a new Geometry decoded from a
@@ -51,12 +68,6 @@ func FromWKB(wkb []byte) (*Geometry, error) {
 func FromHex(hex string) (*Geometry, error) {
 	decoder := newWkbDecoder()
 	return decoder.decodeHex(hex)
-}
-
-// destroy frees the storage associated with the underlying GEOS C API object.
-func (g *Geometry) destroy() {
-	cGEOSGeom_destroy(g.g)
-	g.g = nil
 }
 
 // ToWKT returns a string encoding of the geometry, in Well-Known Text (WKT)
@@ -100,9 +111,7 @@ func (g *Geometry) Project(p *Geometry) float64 {
 // Return closest point to given distance within geometry.
 // This geometry must be a LineString.
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
-	p := cGEOSInterpolate(g.g, C.double(dist))
-	// XXX: test for exception
-	return geomFromPtr(p), nil
+	return geomFromC("Interpolate", cGEOSInterpolate(g.g, C.double(dist)))
 }
 
 // Buffer computes a new geometry as the dilation (position amount) or erosion
@@ -226,7 +235,9 @@ func NewPolygon(shell []Coord, holes ...[]Coord) (*Geometry, error) {
 			return nil, err
 		}
 		ints = append(ints, g)
+		runtime.SetFinalizer(g, nil)
 	}
+	runtime.SetFinalizer(ext, nil)
 	return PolygonFromGeom(ext, ints...)
 }
 
@@ -239,10 +250,14 @@ func PolygonFromGeom(shell *Geometry, holes ...*Geometry) (*Geometry, error) {
 	var holeCPtrs []*C.GEOSGeometry
 	for i := range holes {
 		holeCPtrs = append(holeCPtrs, holes[i].g)
+		// The ownership of the holes becomes that of the new polygon
+		runtime.SetFinalizer(holes[i], nil)
 	}
 	if len(holeCPtrs) > 0 {
 		ptrHoles = &holeCPtrs[0]
 	}
+	// The ownership of the shell becomes that of the new polygon
+	runtime.SetFinalizer(shell, nil)
 	return geomFromC("NewPolygon", cGEOSGeom_createPolygon(shell.g, ptrHoles, C.uint(len(holeCPtrs))))
 }
 
@@ -260,6 +275,9 @@ func NewCollection(_type GeometryType, geoms ...*Geometry) (*Geometry, error) {
 	var geomCPtrs []*C.GEOSGeometry
 	for i := range geoms {
 		geomCPtrs = append(geomCPtrs, geoms[i].g)
+		// The ownership of the component geometries becomes that of the new
+		// collection geometry
+		runtime.SetFinalizer(geoms[i], nil)
 	}
 	ptrGeoms = &geomCPtrs[0]
 	return geomFromC("NewCollection", cGEOSGeom_createCollection(C.int(_type), ptrGeoms, C.uint(len(geomCPtrs))))
@@ -267,7 +285,7 @@ func NewCollection(_type GeometryType, geoms ...*Geometry) (*Geometry, error) {
 
 // Clone performs a deep copy on the geometry.
 func (g *Geometry) Clone() (*Geometry, error) {
-	return g.unaryTopo("Clone", cGEOSGeom_clone)
+	return geomFromC("Clone", cGEOSGeom_clone(g.g))
 }
 
 // Unary topology functions
@@ -504,7 +522,10 @@ func (g *Geometry) NGeometry() (int, error) {
 
 // Geometry returns the nth sub-geometry of the geometry (eg., of a collection).
 func (g *Geometry) Geometry(n int) (*Geometry, error) {
-	return geomFromC("Geometry", cGEOSGetGeometryN(g.g, C.int(n)))
+	// According to GEOS C API, GEOSGetGeometryN returns a pointer to internal
+	// storage and must not be destroyed directly, so we bypass the regular
+	// constructor to avoid the finalizer.
+	return geomFromPtrUnowned(cGEOSGetGeometryN(g.g, C.int(n)))
 }
 
 // Normalize computes the normal form of the geometry.
@@ -543,7 +564,10 @@ func (g *Geometry) Holes() ([]*Geometry, error) {
 	}
 	holes := make([]*Geometry, n)
 	for i := 0; i < n; i++ {
-		ring, err := geomFromC("InteriorRing", cGEOSGetInteriorRingN(g.g, C.int(i)))
+		// According to the GEOS C API, GEOSGetInteriorRingN returns a pointer
+		// to internal storage and must not be destroyed directly, so we bypass
+		// the usual constructor to avoid the finalizer.
+		ring, err := geomFromPtrUnowned(cGEOSGetInteriorRingN(g.g, C.int(i)))
 		if err != nil {
 			return nil, err
 		}
@@ -557,7 +581,10 @@ func (g *Geometry) Holes() ([]*Geometry, error) {
 // Shell returns the exterior ring (a LinearRing) of the geometry.
 // Geometry must be a Polygon.
 func (g *Geometry) Shell() (*Geometry, error) {
-	return geomFromC("ExteriorRing", cGEOSGetExteriorRing(g.g))
+	// According to the GEOS C API, GEOSGetExteriorRing returns a pointer
+	// to internal storage and must not be destroyed directly, so we bypass
+	// the usual constructor to avoid the finalizer.
+	return geomFromPtrUnowned(cGEOSGetExteriorRing(g.g))
 }
 
 // NCoordinate returns the number of coordinates of the geometry.
@@ -565,23 +592,15 @@ func (g *Geometry) NCoordinate() (int, error) {
 	return intFromC("NCoordinate", cGEOSGetNumCoordinates(g.g), -1)
 }
 
-// Geometry must be a LineString, LinearRing, or Point.
-func (g *Geometry) coordSeq() (*coordSeq, error) {
-	c := cGEOSGeom_getCoordSeq(g.g)
-	if c == nil {
-		return nil, Error()
-	}
-	return coordSeqFromPtr(c), nil
-}
-
 // Coords returns a slice of Coord, a sequence of coordinates underlying the
 // point, linestring, or linear ring.
 func (g *Geometry) Coords() ([]Coord, error) {
-	c := cGEOSGeom_getCoordSeq(g.g)
-	if c == nil {
+	ptr := cGEOSGeom_getCoordSeq(g.g)
+	if ptr == nil {
 		return nil, Error()
 	}
-	cs := coordSeqFromPtr(c)
+	//cs := coordSeqFromPtr(ptr)
+	cs := &coordSeq{c: ptr}
 	return coordSlice(cs)
 }
 

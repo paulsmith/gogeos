@@ -21,15 +21,21 @@ func newCoordSeq(size, dims int) *coordSeq {
 	return coordSeqFromPtr(p)
 }
 
-func coordSeqFromPtr(c *C.GEOSCoordSequence) *coordSeq {
-	cs := &coordSeq{c}
-	runtime.SetFinalizer(cs, (*coordSeq).destroy)
+func coordSeqFromPtr(ptr *C.GEOSCoordSequence) *coordSeq {
+	cs := &coordSeq{c: ptr}
+	runtime.SetFinalizer(cs, func(*coordSeq) {
+		cGEOSCoordSeq_destroy(ptr)
+	})
 	return cs
 }
 
 func coordSeqFromSlice(coords []Coord) (*coordSeq, error) {
 	// XXX: handle 3-dim
-	cs := newCoordSeq(len(coords), 2)
+	ptr := cGEOSCoordSeq_create(C.uint(len(coords)), C.uint(2))
+	if ptr == nil {
+		return nil, Error()
+	}
+	cs := &coordSeq{c: ptr}
 	for i, c := range coords {
 		if err := cs.setX(i, c.X); err != nil {
 			return nil, err
@@ -116,10 +122,4 @@ func (c *coordSeq) dims() (int, error) {
 		return 0, Error()
 	}
 	return int(val), nil
-}
-
-func (c *coordSeq) destroy() {
-	// XXX: mutex
-	cGEOSCoordSeq_destroy(c.c)
-	c.c = nil
 }
