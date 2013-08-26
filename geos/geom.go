@@ -108,6 +108,11 @@ func (g *Geometry) Project(p *Geometry) float64 {
 	return float64(cGEOSProject(g.g, p.g))
 }
 
+func (g *Geometry) ProjectNormalized(p *Geometry) float64 {
+	// XXX: error if wrong geometry types
+	return float64(cGEOSProjectNormalized(g.g, p.g))
+}
+
 // Return closest point to given distance within geometry.
 // This geometry must be a LineString.
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
