@@ -16,7 +16,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/paulsmith/gogeos/geos"
 )
