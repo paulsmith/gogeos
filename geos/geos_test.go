@@ -1,12 +1,18 @@
 package geos
 
 import (
+	"regexp"
 	"testing"
 )
 
 func TestVersion(t *testing.T) {
-	expected := "3.3.8-CAPI-1.7.8"
-	if actual := Version(); actual != expected {
-		t.Errorf("Version(): want %v, got %v", expected, actual)
+	const re = `3\.3\.\d+-CAPI-1\.7\.\d+$`
+	version := Version()
+	matched, err := regexp.MatchString(re, version)
+	if err != nil {
+		t.Fatal("Version regex:", err)
+	}
+	if !matched {
+		t.Errorf("Version(): %q didn't match regex \"%s\"", version, re)
 	}
 }
