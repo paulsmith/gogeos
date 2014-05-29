@@ -12,10 +12,10 @@ It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
 
 <h2 id="download">Download</h2>
 
-Current release: **v0.1.1** (Friday, June 14, 2013)
+Current release: **v0.1.2** (Thursday, May 29, 2014)
 
-<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.1.zip">Download .zip</a>
-<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.1.tar.gz">Download .tar.gz</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.2.zip">Download .zip</a>
+<a class="pure-button" href="https://github.com/paulsmith/gogeos/archive/v0.1.2.tar.gz">Download .tar.gz</a>
 <a class="pure-button" href="https://github.com/paulsmith/gogeos">View source</a>
 
 <h2 id="quickstart">Quick start</h2>
@@ -72,7 +72,7 @@ gogeos is an open source project (MIT license).
 
 ### Requirements
 
- * GEOS 3.3.x or greater
+ * GEOS 3.3.8 or 3.3.9
 
 GEOS must be installed on your system to build gogeos.
 
