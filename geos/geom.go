@@ -103,31 +103,41 @@ func (g *Geometry) Hex() ([]byte, error) {
 
 // Linearref functions
 
-// Return distance of point 'p' projected on this geometry from origin.
+// Project returns distance of point projected on this geometry from origin.
 // This must be a lineal geometry.
 func (g *Geometry) Project(p *Geometry) float64 {
 	// XXX: error if wrong geometry types
 	return float64(cGEOSProject(g.g, p.g))
 }
 
+// ProjectNormalized returns distance of point projected on this geometry from
+// origin, divided by its length.
+// This must be a lineal geometry.
 func (g *Geometry) ProjectNormalized(p *Geometry) float64 {
 	// XXX: error if wrong geometry types
 	return float64(cGEOSProjectNormalized(g.g, p.g))
 }
 
-// Return closest point to given distance within geometry.
+// Interpolate returns the closest point to given distance within geometry.
 // This geometry must be a LineString.
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 	return geomFromC("Interpolate", cGEOSInterpolate(g.g, C.double(dist)))
 }
 
-var ErrLineInterpolatePointDist = errors.New("distance must between 0 and 1")
-var ErrLineInterpolatePointType = errors.New("geometry must be a linestring")
+var (
+	// ErrLineInterpolatePointDist is an error for an invalid interpolation
+	// distance value.
+	ErrLineInterpolatePointDist = errors.New("distance must between 0 and 1")
+	// ErrLineInterpolatePointType is an error for an line interpolation point
+	// performed on a non-linestring geometry.
+	ErrLineInterpolatePointType = errors.New("geometry must be a linestring")
+)
 
 // LineInterpolatePoint interpolates a point along a line.
 func (g *Geometry) LineInterpolatePoint(dist float64) (*Geometry, error) {
 	// This code ported from LWGEOM_line_interpolate_point in postgis,
 	// by jsunday@rochgrp.com and strk@refractions.net.
+
 	if dist < 0 || dist > 1 {
 		return nil, ErrLineInterpolatePointDist
 	}
@@ -256,33 +266,42 @@ func (g *Geometry) Buffer(d float64) (*Geometry, error) {
 	return geomFromC("Buffer", cGEOSBuffer(g.g, C.double(d), quadsegs))
 }
 
+// CapStyle is the style of the cap at the end of a line segment.
 type CapStyle int
 
 const (
 	_ CapStyle = iota
+	// CapRound is a round end cap.
 	CapRound
+	// CapFlat is a flat end cap.
 	CapFlat
+	// CapSquare is a square end cap.
 	CapSquare
 )
 
+// JoinStyle is the style of the joint of two line segments.
 type JoinStyle int
 
 const (
 	_ JoinStyle = iota
+	// JoinRound is a round segment join style.
 	JoinRound
+	// JoinMitre is a mitred segment join style.
 	JoinMitre
+	// JoinBevel is a beveled segment join style.
 	JoinBevel
 )
 
+// BufferOpts are options to the BufferWithOpts method.
 type BufferOpts struct {
-	// Number of quadrant segments
-	QuadSegs    int
-	// End cap style
-	CapStyle    CapStyle
-	// Join style
-	JoinStyle   JoinStyle
-	// Mitre limit
-	MitreLimit  float64
+	// QuadSegs is the number of quadrant segments.
+	QuadSegs int
+	// CapStyle is the end cap style.
+	CapStyle CapStyle
+	// JoinStyle is the line segment join style.
+	JoinStyle JoinStyle
+	// MitreLimit is the limit in the amount of a mitred join.
+	MitreLimit float64
 }
 
 // BufferWithOpts computes a new geometry as the dilation (position amount) or erosion
@@ -498,7 +517,7 @@ func (g *Geometry) Snap(other *Geometry, tolerance float64) (*Geometry, error) {
 	return geomFromC("Snap", cGEOSSnap(g.g, other.g, C.double(tolerance)))
 }
 
-// Prepared returns a new prepared geometry from the geometry -- see PGeometry
+// Prepare returns a new prepared geometry from the geometry -- see PGeometry
 func (g *Geometry) Prepare() *PGeometry {
 	return PrepareGeometry(g)
 }
@@ -790,13 +809,15 @@ func (g *Geometry) Distance(other *Geometry) (float64, error) {
 	return g.binaryFloat("Distance", cGEOSDistance, other)
 }
 
-// HausdorffDistance returns the maximum distance of the geometry to the nearest
+// HausdorffDistance computes the maximum distance of the geometry to the nearest
 // point in the other geometry (i.e., considers the whole shape and position of
 // the geometries).
 func (g *Geometry) HausdorffDistance(other *Geometry) (float64, error) {
 	return g.binaryFloat("HausdorffDistance", cGEOSHausdorffDistance, other)
 }
 
+// HausdorffDistanceDensify computes the Hausdorff distance (see
+// HausdorffDistance) with an additional densification fraction amount.
 func (g *Geometry) HausdorffDistanceDensify(other *Geometry, densifyFrac float64) (float64, error) {
 	var d C.double
 	return float64FromC("HausdorffDistanceDensify", cGEOSHausdorffDistanceDensify(g.g, other.g, C.double(densifyFrac), &d), d)

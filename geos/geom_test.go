@@ -44,12 +44,12 @@ func TestGeometryTypeString(t *testing.T) {
 
 func TestGeometryType(t *testing.T) {
 	g := Must(FromWKT("POINT(10 10)"))
-	typeId, err := g.Type()
+	typeID, err := g.Type()
 	if err != nil {
 		panic(err)
 	}
-	if typeId != POINT {
-		t.Errorf("Geometry.Type(): wanted %v, got %v", POINT, typeId)
+	if typeID != POINT {
+		t.Errorf("Geometry.Type(): wanted %v, got %v", POINT, typeID)
 	}
 }
 
@@ -117,11 +117,11 @@ func TestOffsetCurve(t *testing.T) {
 const offsetCurve = `LINESTRING (0.8944271909999159 10.4472135954999583, 5.0000000000000000 2.2360679774997907, 9.1055728090000834 10.4472135954999583)`
 
 func reconstructGeom(g *Geometry) *Geometry {
-	typeId, err := g.Type()
+	typeID, err := g.Type()
 	if err != nil {
 		panic(err)
 	}
-	switch typeId {
+	switch typeID {
 	case POINT:
 		coords := MustCoords(g.Coords())
 		return Must(NewPoint(coords...))
@@ -153,7 +153,7 @@ func reconstructGeom(g *Geometry) *Geometry {
 			geom := Must(g.Geometry(i))
 			geoms = append(geoms, reconstructGeom(geom))
 		}
-		return Must(NewCollection(typeId, geoms...))
+		return Must(NewCollection(typeID, geoms...))
 	}
 	return nil
 }
