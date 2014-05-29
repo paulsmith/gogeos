@@ -1020,3 +1020,46 @@ func TestHex(t *testing.T) {
 		}
 	}
 }
+
+func TestLineInterpolatePointDistError(t *testing.T) {
+	line := Must(FromWKT("LINESTRING(0 0, 10 10)"))
+	_, err := line.LineInterpolatePoint(-0.1)
+	if err != ErrLineInterpolatePointDist {
+		t.Errorf("must not allow negative distance")
+	}
+	_, err = line.LineInterpolatePoint(1.1)
+	if err != ErrLineInterpolatePointDist {
+		t.Errorf("must not allow distance greater than 1.0")
+	}
+}
+
+func TestLineInterpolatePointTypeError(t *testing.T) {
+	pt := Must(FromWKT("POINT(0 0)"))
+	_, err := pt.LineInterpolatePoint(0.0)
+	if err != ErrLineInterpolatePointType {
+		t.Errorf("only permitted on linestrings")
+	}
+}
+
+func TestLineInterpolatePoint(t *testing.T) {
+	var tests = []struct {
+		line string
+		dist float64
+		pt   string
+	}{
+		{"LINESTRING(25 50, 75 75, 100 35)", 0.0, "POINT(25 50)"},
+		{"LINESTRING(25 50, 75 75, 100 35)", 1.0, "POINT(100 35)"},
+		{"LINESTRING(25 50, 100 125, 150 190)", 0.2, "POINT (51.5974135047432014 76.5974135047432014)"},
+	}
+	for i, test := range tests {
+		line := Must(FromWKT(test.line))
+		actual, err := line.LineInterpolatePoint(test.dist)
+		if err != nil {
+			t.Fatalf("#%d %s", i, err)
+		}
+		expected := Must(FromWKT(test.pt))
+		if !mustEqual(actual.Equals(expected)) {
+			t.Errorf("#%d want %v got %v", i, test.pt, actual.String())
+		}
+	}
+}

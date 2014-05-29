@@ -6,6 +6,8 @@ package geos
 import "C"
 
 import (
+	"errors"
+	"math"
 	"runtime"
 	"unsafe"
 )
@@ -117,6 +119,132 @@ func (g *Geometry) ProjectNormalized(p *Geometry) float64 {
 // This geometry must be a LineString.
 func (g *Geometry) Interpolate(dist float64) (*Geometry, error) {
 	return geomFromC("Interpolate", cGEOSInterpolate(g.g, C.double(dist)))
+}
+
+var ErrLineInterpolatePointDist = errors.New("distance must between 0 and 1")
+var ErrLineInterpolatePointType = errors.New("geometry must be a linestring")
+
+// LineInterpolatePoint interpolates a point along a line.
+func (g *Geometry) LineInterpolatePoint(dist float64) (*Geometry, error) {
+	// This code ported from LWGEOM_line_interpolate_point in postgis,
+	// by jsunday@rochgrp.com and strk@refractions.net.
+	if dist < 0 || dist > 1 {
+		return nil, ErrLineInterpolatePointDist
+	}
+
+	typ, err := g.Type()
+	if err != nil {
+		return nil, err
+	}
+	if typ != LINESTRING {
+		return nil, ErrLineInterpolatePointType
+	}
+
+	empty, err := g.IsEmpty()
+	if err != nil {
+		return nil, err
+	}
+	if empty {
+		pt, err := NewPoint()
+		if err != nil {
+			return nil, err
+		}
+		return pt, nil
+	}
+
+	// If distance is one of two extremes, return the point on that end.
+	if dist == 0.0 || dist == 1.0 {
+		var (
+			pt  *Geometry
+			err error
+		)
+		if dist == 0.0 {
+			pt, err = g.StartPoint()
+		} else {
+			pt, err = g.EndPoint()
+		}
+		if err != nil {
+			return nil, err
+		}
+		return pt, nil
+	}
+
+	// Interpolate a point on the line.
+
+	nsegs, err := g.NPoint()
+	if err != nil {
+		return nil, err
+	}
+	nsegs--
+
+	length, err := g.Length()
+	if err != nil {
+		return nil, err
+	}
+
+	var tlength float64
+
+	for i := 0; i < nsegs; i++ {
+		a, err := g.Point(i)
+		if err != nil {
+			return nil, err
+		}
+		b, err := g.Point(i + 1)
+		if err != nil {
+			return nil, err
+		}
+
+		// Find the relative length of this segment.
+		slength, err := a.Distance(b)
+		if err != nil {
+			return nil, err
+		}
+		slength /= length
+
+		if dist < tlength+slength {
+			dseg := (dist - tlength) / slength
+			pt, err := interpolatePoint2D(a, b, dseg)
+			if err != nil {
+				return nil, err
+			}
+			return pt, nil
+		}
+		tlength += slength
+	}
+
+	// Return the last point on the line. This shouldn't happen, but could if
+	// there's some floating point rounding errors.
+	return g.EndPoint()
+}
+
+func interpolatePoint2D(a, b *Geometry, dist float64) (*Geometry, error) {
+	absDist := math.Abs(dist)
+	if dist < 0 || dist > 1 {
+		return nil, errors.New("distance must be between 0 and 1")
+	}
+
+	ax, err := a.X()
+	if err != nil {
+		return nil, err
+	}
+	ay, err := a.Y()
+	if err != nil {
+		return nil, err
+	}
+	bx, err := b.X()
+	if err != nil {
+		return nil, err
+	}
+	by, err := b.Y()
+	if err != nil {
+		return nil, err
+	}
+
+	ix := ax + ((bx - ax) * absDist)
+	iy := ay + ((by - ay) * absDist)
+
+	coord := NewCoord(ix, iy)
+	return NewPoint(coord)
 }
 
 // Buffer computes a new geometry as the dilation (position amount) or erosion
