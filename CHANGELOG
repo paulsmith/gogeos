@@ -1,5 +1,19 @@
 CHANGELOG
 
+0.1.2 / 2014-05-29
+* Add LineInterpolatePoint -- returns a point interpolated along a line, ala
+similar functionality in PostGIS, useful for geocoding, for example.
+
+* Allow GEOS version 3.3.9 (in addition to 3.3.8) -- support for GEOS version >=
+3.4.x may be pending in 0.1.3.
+
+* Add ProjectNormalized -- linear referencing function (thanks, bdon@bdon.org!)
+
+* Fix race condition -- library should be thread-safe with respect to underlying
+GEOS C library.
+
+* Fix bug with join and cap style constants.
+
 0.1.1 / 2013-06-14
 * Add BufferWithOpts -- provides user more control over buffering options,
 including # of quadrant segments, end cap & join styles, mitre limit, and

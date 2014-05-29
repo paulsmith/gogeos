@@ -56,7 +56,7 @@ Installation
 
 ### Requirements
 
- * GEOS 3.3.x or greater
+ * GEOS 3.3.8 or 3.3.9
 
 GEOS must be installed on your system to build gogeos.
 
