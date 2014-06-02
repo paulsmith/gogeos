@@ -72,6 +72,15 @@ $ apt-get install libgeos-dev
 $ brew install geos
 ```
 
+Note that Xcode messes with the default gcc search/include directories.
+Run these in your terminal or put them in `~/.profile` to fix `./geos.h:1:10: fatal error: 'geos_c.h' file not found`
+
+````bash
+export C_INCLUDE_PATH=/usr/local/include
+export LIBRARY_PATH=/usr/local/lib
+export LD_LIBRARY_PATH=/usr/local/lib
+````
+
 #### From source (all OSes)
 
 ```bash
