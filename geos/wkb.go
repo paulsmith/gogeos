@@ -79,6 +79,14 @@ func encodeWkb(e *wkbEncoder, g *Geometry, fn func(*C.GEOSWKBWriter, *C.GEOSGeom
 	return out, nil
 }
 
+func (e *wkbEncoder) encodeEWkb(g *Geometry) ([]byte, error) {
+	srid, _ := g.SRID()
+	if srid > 0 {
+		cGEOSWKBWriter_setIncludeSRID(e.w, C.char(1))
+	}
+	return encodeWkb(e, g, cGEOSWKBWriter_write)
+}
+
 func (e *wkbEncoder) encode(g *Geometry) ([]byte, error) {
 	return encodeWkb(e, g, cGEOSWKBWriter_write)
 }
