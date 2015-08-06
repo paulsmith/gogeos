@@ -89,10 +89,16 @@ func (g *Geometry) String() string {
 	return str
 }
 
-// WKB returns the geoemtry encoded as a Well-Known Binary (WKB).
+// WKB returns the geometry encoded as a Well-Known Binary (WKB).
 func (g *Geometry) WKB() ([]byte, error) {
 	encoder := newWkbEncoder()
 	return encoder.encode(g)
+}
+
+// EWKB returns the geometry encoded as a Well-Known Binary (WKB) with SRID meta data.
+func (g *Geometry) EWKB() ([]byte, error) {
+	encoder := newWkbEncoder()
+	return encoder.encodeEWkb(g)
 }
 
 // Hex returns the geometry as a Well-Known Binary (WKB) hex-encoded byte slice.
