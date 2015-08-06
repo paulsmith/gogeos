@@ -64,6 +64,11 @@ func newWkbEncoder() *wkbEncoder {
 
 func encodeWkb(e *wkbEncoder, g *Geometry, fn func(*C.GEOSWKBWriter, *C.GEOSGeometry, *C.size_t) *C.uchar) ([]byte, error) {
 	var size C.size_t
+	srid, _ := g.SRID()
+	if srid > 0 {
+		c := C.char(1)
+		cGEOSWKBWriter_setIncludeSRID(e.w, c)
+	}
 	bytes := fn(e.w, g.g, &size)
 	if bytes == nil {
 		return nil, Error()
