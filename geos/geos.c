@@ -26,3 +26,7 @@ char *gogeos_get_last_error(void) {
 GEOSContextHandle_t gogeos_initGEOS() {
     return initGEOS_r(gogeos_notice_handler, gogeos_error_handler);
 }
+
+void strTreeQueryCallbackGo(void *item, void *data) {
+    StrTreeQueryCallbackGo(item, data);
+}

@@ -1,6 +1,6 @@
 .PHONY: fmt check
 
-SRCS = coord.go coordseq.go cwrappers.go geom.go geos.c geos.go geos.h helper.go prepared.go types.go wkb.go wkt.go
+SRCS = coord.go coordseq.go cwrappers.go geom.go geos.c geos.go geos.h helper.go prepared.go strtree.go types.go wkb.go wkt.go
 
 all: build
 

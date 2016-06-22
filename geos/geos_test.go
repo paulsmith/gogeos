@@ -6,7 +6,7 @@ import (
 )
 
 func TestVersion(t *testing.T) {
-	const re = `3\.3\.\d+-CAPI-1\.7\.\d+$`
+	const re = `3\.[3-4]\.\d+-CAPI-1\.[7-8]\.\d+.*`
 	version := Version()
 	matched, err := regexp.MatchString(re, version)
 	if err != nil {
