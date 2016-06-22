@@ -8,3 +8,6 @@ void gogeos_notice_handler(const char *fmt, ...);
 void gogeos_error_handler(const char *fmt, ...);
 char *gogeos_get_last_error(void);
 GEOSContextHandle_t gogeos_initGEOS();
+
+typedef void (*strTreeQueryCallback)(void*, void*);
+void strTreeQueryCallbackGo(void *item, void *data);
