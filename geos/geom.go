@@ -23,7 +23,8 @@ import (
 //	MultiPolygon
 //	GeometryCollection
 type Geometry struct {
-	g *C.GEOSGeometry
+	g      *C.GEOSGeometry
+	parent *Geometry
 }
 
 // geomFromPtr returns a new Geometry that's been initialized with a C pointer
@@ -44,11 +45,11 @@ func geomFromPtr(ptr *C.GEOSGeometry) *Geometry {
 //
 // This constructor should be used when the caller doesn't have ownership of the
 // underlying C object.
-func geomFromPtrUnowned(ptr *C.GEOSGeometry) (*Geometry, error) {
+func geomFromPtrUnowned(ptr *C.GEOSGeometry, parent *Geometry) (*Geometry, error) {
 	if ptr == nil {
 		return nil, Error()
 	}
-	return &Geometry{g: ptr}, nil
+	return &Geometry{g: ptr, parent: parent}, nil
 }
 
 // FromWKT is a factory function that returns a new Geometry decoded from a
@@ -681,7 +682,7 @@ func (g *Geometry) Geometry(n int) (*Geometry, error) {
 	// According to GEOS C API, GEOSGetGeometryN returns a pointer to internal
 	// storage and must not be destroyed directly, so we bypass the regular
 	// constructor to avoid the finalizer.
-	return geomFromPtrUnowned(cGEOSGetGeometryN(g.g, C.int(n)))
+	return geomFromPtrUnowned(cGEOSGetGeometryN(g.g, C.int(n)), g)
 }
 
 // Normalize computes the normal form of the geometry.
@@ -723,7 +724,7 @@ func (g *Geometry) Holes() ([]*Geometry, error) {
 		// According to the GEOS C API, GEOSGetInteriorRingN returns a pointer
 		// to internal storage and must not be destroyed directly, so we bypass
 		// the usual constructor to avoid the finalizer.
-		ring, err := geomFromPtrUnowned(cGEOSGetInteriorRingN(g.g, C.int(i)))
+		ring, err := geomFromPtrUnowned(cGEOSGetInteriorRingN(g.g, C.int(i)), g)
 		if err != nil {
 			return nil, err
 		}
@@ -740,7 +741,7 @@ func (g *Geometry) Shell() (*Geometry, error) {
 	// According to the GEOS C API, GEOSGetExteriorRing returns a pointer
 	// to internal storage and must not be destroyed directly, so we bypass
 	// the usual constructor to avoid the finalizer.
-	return geomFromPtrUnowned(cGEOSGetExteriorRing(g.g))
+	return geomFromPtrUnowned(cGEOSGetExteriorRing(g.g), g)
 }
 
 // NCoordinate returns the number of coordinates of the geometry.
@@ -755,9 +756,11 @@ func (g *Geometry) Coords() ([]Coord, error) {
 	if ptr == nil {
 		return nil, Error()
 	}
-	//cs := coordSeqFromPtr(ptr)
 	cs := &coordSeq{c: ptr}
-	return coordSlice(cs)
+	coords, err := coordSlice(cs)
+	// Make sure the owner of the array outlives coordinates processing.
+	runtime.KeepAlive(g)
+	return coords, err
 }
 
 // Dimension returns the number of dimensions geometry, eg., 1 for point, 2 for
