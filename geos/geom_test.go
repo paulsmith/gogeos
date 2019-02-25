@@ -477,36 +477,42 @@ func TestIsEmpty(t *testing.T) {
 var binaryTopoTests = []struct {
 	g1, g2, out string
 	method      func(*Geometry, *Geometry) (*Geometry, error)
+	methodName  string
 }{
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 1 3, 3 3, 3 1, 1 1))",
 		"POLYGON((1 1, 2 1, 2 2, 1 2, 1 1))",
 		(*Geometry).Intersection,
+		"Intersection",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 1 3, 3 3, 3 1, 1 1))",
 		"POLYGON((2 1, 2 0, 0 0, 0 2, 1 2, 1 1, 2 1))",
 		(*Geometry).Difference,
+		"Difference",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 1 3, 3 3, 3 1, 1 1))",
 		"MULTIPOLYGON(((2 1, 2 0, 0 0, 0 2, 1 2, 1 1, 2 1)), ((2 1, 2 2, 1 2, 1 3, 3 3, 3 1, 2 1)))",
 		(*Geometry).SymDifference,
+		"SymDifference",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 1 3, 3 3, 3 1, 1 1))",
 		"POLYGON((2 1, 2 0, 0 0, 0 2, 1 2, 1 3, 3 3, 3 1, 2 1))",
 		(*Geometry).Union,
+		"Union",
 	},
 	{
 		"LINESTRING(0 1, 1 1, 2 2, 3 3, 4 4, 4 5)",
 		"LINESTRING(1 0, 1 1, 4 4, 5 4)",
 		"GEOMETRYCOLLECTION (MULTILINESTRING ((1 1, 2 2), (2 2, 3 3), (3 3, 4 4)), MULTILINESTRING EMPTY)",
 		(*Geometry).SharedPaths,
+		"SharedPaths",
 	},
 }
 
@@ -516,7 +522,7 @@ func TestBinaryTopo(t *testing.T) {
 		g2 := Must(FromWKT(test.g2))
 		expected := Must(FromWKT(test.out))
 		if actual := Must(test.method(g1, g2)); !mustEqual(expected.Equals(actual)) {
-			t.Errorf("%+V(): want %v got %v", test.method, expected, actual)
+			t.Errorf("%s(): want %v got %v", test.methodName, expected, actual)
 		}
 	}
 }
@@ -544,65 +550,77 @@ func TestSnap(t *testing.T) {
 }
 
 var unaryTopoTests = []struct {
-	g1, out string
-	method  func(*Geometry) (*Geometry, error)
+	g1, out    string
+	method     func(*Geometry) (*Geometry, error)
+	methodName string
 }{
 	{
 		"MULTIPOINT((3 1.5), (3.5 1), (4 1), (5 2), (4 1.5), (3.5 1.5))",
 		"POLYGON ((3 1, 5 1, 5 2, 3 2, 3 1))",
 		(*Geometry).Envelope,
+		"Envelope",
 	},
 	{
 		"POLYGON((1 1, 3 1, 2 2, 3 3, 1 3, 1 1))",
 		"POLYGON ((1 1, 1 3, 3 3, 3 1, 1 1))",
 		(*Geometry).ConvexHull,
+		"ConvexHull",
 	},
 	/*
-	   {
-	       "POINT(-117 35)",
-	       "GEOMETRYCOLLECTION EMPTY", // XXX can't compare empty geoms for equality
-	       (*Geometry).Boundary,
-	   },
+		   {
+		       "POINT(-117 35)",
+		       "GEOMETRYCOLLECTION EMPTY", // XXX can't compare empty geoms for equality
+			   (*Geometry).Boundary,
+			   "Boundary",
+		   },
 	*/
 	{
 		"LINESTRING(0 0, 5 5, 10 0)",
 		"MULTIPOINT (0 0, 10 0)",
 		(*Geometry).Boundary,
+		"Boundary",
 	},
 	{
 		"POLYGON((1 1, 3 1, 2 2, 3 3, 1 3, 1 1))",
 		"LINESTRING (1 1, 3 1, 2 2, 3 3, 1 3, 1 1)",
 		(*Geometry).Boundary,
+		"Boundary",
 	},
 	{
 		"MULTIPOLYGON(((0 0, 10 0, 10 10, 0 10, 0 0)), ((5 5, 15 5, 15 15, 5 15, 5 5)))",
 		"POLYGON ((10 5, 10 0, 0 0, 0 10, 5 10, 5 15, 15 15, 15 5, 10 5))",
 		(*Geometry).UnaryUnion,
+		"UnaryUnion",
 	},
 	{
 		"MULTIPOINT((0 0), (1 1), (0 0), (2 2), (-117 35), (2 2))",
 		"MULTIPOINT (-117 35, 0 0, 1 1, 2 2)",
 		(*Geometry).UnaryUnion,
+		"UnaryUnion",
 	},
 	{
 		"POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))",
 		"POINT (0.5 0.5)",
 		(*Geometry).PointOnSurface,
+		"PointOnSurface",
 	},
 	{
 		"POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))",
 		"POINT (0.5 0.5)",
 		(*Geometry).Centroid,
+		"Centroid",
 	},
 	{
 		"MULTILINESTRING((1 5, 3 4, 1 1), (1 1, 2 0, 3 1))",
 		"LINESTRING (1 5, 3 4, 1 1, 2 0, 3 1)",
 		(*Geometry).LineMerge,
+		"LineMerge",
 	},
 	{
 		"POLYGON((0 0, 1 0, 1 1, 0 1, 0 0))",
 		"MULTIPOINT (0 0, 1 0, 1 1, 0 1)",
 		(*Geometry).UniquePoints,
+		"UniquePoints",
 	},
 }
 
@@ -611,28 +629,31 @@ func TestUnaryTopo(t *testing.T) {
 		g1 := Must(FromWKT(test.g1))
 		expected := Must(FromWKT(test.out))
 		if actual := Must(test.method(g1)); !mustEqual(actual.EqualsExact(expected, 0.0)) {
-			t.Errorf("%+V(): want %v got %v", test.method, expected, actual)
+			t.Errorf("%s(): want %v got %v", test.methodName, expected, actual)
 		}
 	}
 }
 
 func TestSimplifyMethods(t *testing.T) {
 	tests := []struct {
-		g1, out string
-		tol     float64
-		method  func(*Geometry, float64) (*Geometry, error)
+		g1, out    string
+		tol        float64
+		method     func(*Geometry, float64) (*Geometry, error)
+		methodName string
 	}{
 		{
 			"LINESTRING(0 0, 1 1, 0 2, 1 3, 0 4, 1 5)",
 			"LINESTRING (0 0, 1 5)",
 			1.0,
 			(*Geometry).Simplify,
+			"Simplify",
 		},
 		{
 			"LINESTRING(0 0, 1 1, 0 2, 1 3, 0 4, 1 5)",
 			"LINESTRING (0 0, 1 5)",
 			1.0,
 			(*Geometry).SimplifyP,
+			"SimplifyP",
 		},
 		// XXX: geom that would collapse and testing for validity/simplicity
 	}
@@ -640,141 +661,163 @@ func TestSimplifyMethods(t *testing.T) {
 		g1 := Must(FromWKT(test.g1))
 		expected := Must(FromWKT(test.out))
 		if actual := Must(test.method(g1, test.tol)); !mustEqual(actual.EqualsExact(expected, 0.0)) {
-			t.Errorf("%+V(): want %v got %v", test.method, expected, actual)
+			t.Errorf("%s(): want %v got %v", test.methodName, expected, actual)
 		}
 	}
 }
 
 var binaryPredTests = []struct {
-	g1, g2 string
-	pred   bool
-	method func(*Geometry, *Geometry) (bool, error)
+	g1, g2     string
+	pred       bool
+	method     func(*Geometry, *Geometry) (bool, error)
+	methodName string
 }{
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))",
 		false,
 		(*Geometry).Disjoint,
+		"Disjoint",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((3 3, 5 3, 5 5, 3 5, 3 3))",
 		true,
 		(*Geometry).Disjoint,
+		"Disjoint",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"LINESTRING(1 2, 3 2)",
 		true,
 		(*Geometry).Touches,
+		"Touches",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"LINESTRING(5 2, 6 2)",
 		false,
 		(*Geometry).Touches,
+		"Touches",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))",
 		true,
 		(*Geometry).Intersects,
+		"Intersects",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((3 3, 5 3, 5 5, 3 5, 3 3))",
 		false,
 		(*Geometry).Intersects,
+		"Intersects",
 	},
 	{
 		"LINESTRING(0 0, 10 10)",
 		"LINESTRING(10 0, 0 10)",
 		true,
 		(*Geometry).Crosses,
+		"Crosses",
 	},
 	{
 		"LINESTRING(0 0, 10 10)",
 		"LINESTRING(11 0, 11 10)",
 		false,
 		(*Geometry).Crosses,
+		"Crosses",
 	},
 	{
 		"LINESTRING(0 0, 10 10)",
 		"POLYGON((-5 -5, 5 -5, 5 5, -5 5, -5 -5))",
 		true,
 		(*Geometry).Crosses,
+		"Crosses",
 	},
 	{
 		"POINT(3 3)",
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		true,
 		(*Geometry).Within,
+		"Within",
 	},
 	{
 		"POINT(-1 35)",
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		false,
 		(*Geometry).Within,
+		"Within",
 	},
 	{
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		"POINT(3 3)",
 		true,
 		(*Geometry).Contains,
+		"Contains",
 	},
 	{
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		"POINT(-1 35)",
 		false,
 		(*Geometry).Contains,
+		"Contains",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((1 1, 3 1, 3 3, 1 3, 1 1))",
 		true,
 		(*Geometry).Overlaps,
+		"Overlaps",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((3 3, 5 3, 5 5, 3 5, 3 3))",
 		false,
 		(*Geometry).Overlaps,
+		"Overlaps",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((0 0, 0 2, 2 2, 2 0, 0 0))",
 		true,
 		(*Geometry).Equals,
+		"Equals",
 	},
 	{
 		"POLYGON((0 0, 2 0, 2 2, 0 2, 0 0))",
 		"POLYGON((0 0, 0 2, 2 2.1, 2 0, 0 0))",
 		false,
 		(*Geometry).Equals,
+		"Equals",
 	},
 	{
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		"POINT(3 3)",
 		true,
 		(*Geometry).Covers,
+		"Covers",
 	},
 	{
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		"POINT(-1 35)",
 		false,
 		(*Geometry).Covers,
+		"Covers",
 	},
 	{
 		"POINT(3 3)",
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		true,
 		(*Geometry).CoveredBy,
+		"CoveredBy",
 	},
 	{
 		"POINT(-1 35)",
 		"POLYGON((0 0, 6 0, 6 6, 0 6, 0 0))",
 		false,
 		(*Geometry).CoveredBy,
+		"CoveredBy",
 	},
 }
 
@@ -783,7 +826,7 @@ func TestBinaryPred(t *testing.T) {
 		g1 := Must(FromWKT(test.g1))
 		g2 := Must(FromWKT(test.g2))
 		if actual := mustBool(test.method(g1, g2)); actual != test.pred {
-			t.Errorf("%+V(): want %v got %v", test.method, test.pred, actual)
+			t.Errorf("%s(): want %v got %v", test.methodName, test.pred, actual)
 		}
 	}
 }
@@ -1003,7 +1046,7 @@ func TestWKB(t *testing.T) {
 			t.Fatalf("#%d %v", i, err)
 		}
 		if !bytes.Equal(wkb, test.wkb) {
-			t.Errorf("#%d want %v got %v", test.wkb, wkb)
+			t.Errorf("#%d want %v got %v", i, test.wkb, wkb)
 		}
 	}
 }
@@ -1016,7 +1059,7 @@ func TestHex(t *testing.T) {
 			t.Fatalf("#%d %v", i, err)
 		}
 		if !bytes.Equal(hex, test.wkb) {
-			t.Errorf("#%d want %v got %v", string(test.wkb), string(hex))
+			t.Errorf("#%d want %v got %v", i, string(test.wkb), string(hex))
 		}
 	}
 }
