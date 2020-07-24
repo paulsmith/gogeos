@@ -63,6 +63,7 @@ func (e *wktEncoder) encode(g *Geometry) (string, error) {
 	if cstr == nil {
 		return "", Error()
 	}
+	defer C.free(unsafe.Pointer(cstr))
 	return C.GoString(cstr), nil
 }
 
