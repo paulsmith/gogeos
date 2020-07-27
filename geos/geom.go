@@ -34,7 +34,7 @@ type Geometry struct {
 func geomFromPtr(ptr *C.GEOSGeometry) *Geometry {
 	g := &Geometry{g: ptr}
 	runtime.SetFinalizer(g, func(g *Geometry) {
-		cGEOSGeom_destroy(g.g)
+		cGEOSGeom_destroy(ptr)
 	})
 	return g
 }
