@@ -1063,3 +1063,21 @@ func TestLineInterpolatePoint(t *testing.T) {
 		}
 	}
 }
+
+func TestBounds(t *testing.T) {
+	testPolygon := "POLYGON((17672.0337 9338.1706,17685.6852 9298.5111,17749.098 9319.1397,17742.66 9339.25,17738.74 9342.61,17735.94 9342.4,17732.42 9340.1,17731.2 9340.32,17729.03 9341.35,17720.35 9348.95,17716.3509 9352.6934,17672.0337 9338.1706))"
+	exampleBounds := Bounds{MinX: 17672.0337, MinY: 9298.5111, MaxX: 17749.098, MaxY: 9352.6934}
+	p, err := FromWKT(testPolygon)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bt, err := p.Bounds()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if bt != exampleBounds {
+		t.Errorf("Bounds are not equal %v != %v", bt, exampleBounds)
+	}
+}
