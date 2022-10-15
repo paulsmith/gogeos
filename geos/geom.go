@@ -809,6 +809,20 @@ func (g *Geometry) Distance(other *Geometry) (float64, error) {
 	return g.binaryFloat("Distance", cGEOSDistance, other)
 }
 
+// FrechetDistance computes a measure of similarity between curves that takes into account the
+// location and ordering of the points along the curves (i.e., considers the whole shape and
+// position and ordering of the geometries).
+func (g *Geometry) FrechetDistance(other *Geometry) (float64, error) {
+	return g.binaryFloat("FrechetDistance", cGEOSFrechetDistance, other)
+}
+
+// FrechetDistanceDensify computes the Frechet distance (see
+// FrechetDistance) with an additional densification fraction amount.
+func (g *Geometry) FrechetDistanceDensify(other *Geometry, densifyFrac float64) (float64, error) {
+	var d C.double
+	return float64FromC("FrechetDistanceDensify", cGEOSFrechetDistanceDensify(g.g, other.g, C.double(densifyFrac), &d), d)
+}
+
 // HausdorffDistance computes the maximum distance of the geometry to the nearest
 // point in the other geometry (i.e., considers the whole shape and position of
 // the geometries).

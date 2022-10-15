@@ -829,6 +829,18 @@ func cGEOSDistance(g1 *C.GEOSGeometry, g2 *C.GEOSGeometry, dist *C.double) C.int
 	return C.GEOSDistance_r(handle, g1, g2, dist)
 }
 
+func cGEOSFrechetDistance(g1 *C.GEOSGeometry, g2 *C.GEOSGeometry, dist *C.double) C.int {
+	handlemu.Lock()
+	defer handlemu.Unlock()
+	return C.GEOSFrechetDistance_r(handle, g1, g2, dist)
+}
+
+func cGEOSFrechetDistanceDensify(g1 *C.GEOSGeometry, g2 *C.GEOSGeometry, densifyFrac C.double, dist *C.double) C.int {
+	handlemu.Lock()
+	defer handlemu.Unlock()
+	return C.GEOSFrechetDistanceDensify_r(handle, g1, g2, densifyFrac, dist)
+}
+
 func cGEOSHausdorffDistance(g1 *C.GEOSGeometry, g2 *C.GEOSGeometry, dist *C.double) C.int {
 	handlemu.Lock()
 	defer handlemu.Unlock()
