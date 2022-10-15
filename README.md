@@ -1,12 +1,19 @@
 gogeos - Go library for spatial data operations and geometric algorithms
 ========================================================================
 
-[![Build Status](https://travis-ci.org/paulsmith/gogeos.png?branch=master)](https://travis-ci.org/paulsmith/gogeos)
+[![Go Reference](https://pkg.go.dev/badge/github.com/onXmaps/gogeos.svg)](https://pkg.go.dev/github.com/onXmaps/gogeos/geos)
 
 gogeos is a library for Go that provides operations on spatial data and
 geometric algorithms.
 
 It provides bindings to the [GEOS](http://trac.osgeo.org/geos/) C library.
+
+**Note:** `github.com/onXmaps/gogeos` is a fork of `github.com/paulsmith/gogeos`.
+It differs as follows:
+ * [Added Fréchet distance wrapper](https://github.com/paulsmith/gogeos/compare/master...onXmaps:gogeos:frechet-distance)
+ * [Added nearest points wrapper](https://github.com/paulsmith/gogeos/compare/master...onXmaps:gogeos:nearest-points)
+ * [Added `go.mod`](https://github.com/paulsmith/gogeos/compare/master...onXmaps:gogeos:go-mod)
+ * [Updated Readme](https://github.com/paulsmith/gogeos/compare/master...onXmaps:gogeos:readme)
 
 Quick start
 -----------
