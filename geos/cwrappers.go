@@ -1008,3 +1008,9 @@ func cGEOSFree(buffer *C.void) {
 	defer handlemu.Unlock()
 	C.GEOSFree_r(handle, unsafe.Pointer(buffer))
 }
+
+func cGEOSNearestPoints(g1 *C.GEOSGeometry, g2 *C.GEOSGeometry) *C.GEOSCoordSequence {
+	handlemu.Lock()
+	defer handlemu.Unlock()
+	return C.GEOSNearestPoints_r(handle, g1, g2)
+}

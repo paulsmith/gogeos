@@ -925,3 +925,14 @@ func (g *Geometry) binaryFloat(name string, cfn binaryFloatGetter, other *Geomet
 func (g *Geometry) simplify(name string, cfn func(*C.GEOSGeometry, C.double) *C.GEOSGeometry, d float64) (*Geometry, error) {
 	return geomFromC(name, cfn(g.g, C.double(d)))
 }
+
+// The closest points of the two geometries. The first point comes from g1 geometry and the second point comes from g2.
+func (g *Geometry) NearestPoints(other *Geometry) ([]Coord, error) {
+	ptr := cGEOSNearestPoints(g.g, other.g)
+	if ptr == nil {
+		return nil, Error()
+	}
+	//cs := coordSeqFromPtr(ptr)
+	cs := &coordSeq{c: ptr}
+	return coordSlice(cs)
+}
